@@ -11,6 +11,46 @@ export const fr = {
     settings: 'Paramètres',
   },
   print: {
+    modeTitle: "Mode d'impression",
+    mode: {
+      cutout: 'À découper (papier)',
+      direct: 'Directement sur carte vierge',
+      full: 'Carte entière avec bordure',
+    },
+    modeDesc: {
+      cutout:
+        'Imprime seulement la surface intérieure avec parchemin, texte et image – sans la bordure brune. À découper et coller sur une carte vierge.',
+      direct: "Imprime seulement le texte et l'image directement sur une carte vierge collée.",
+      full: 'Imprime la carte complète avec bordure brune et parchemin.',
+    },
+    modeSubtitle: {
+      cutout:
+        'Imprimer la surface intérieure sur papier, découper le long de la ligne et coller sur une carte vierge.',
+      direct:
+        "Imprimer une carte au centre d'une feuille A4 – exactement là où la carte vierge est collée.",
+      full: "Imprimer une carte complète au centre d'une feuille A4.",
+    },
+    withFrameDesc: {
+      cutout: 'Affiche aussi en pointillés le bord extérieur de la carte entière.',
+      direct:
+        'Pour un essai sur papier normal : poser la feuille sur la page de test et la regarder à contre-jour.',
+      full: 'Fine ligne autour de la carte entière, par ex. comme ligne de coupe.',
+    },
+    cutStep1: 'Imprimer le PDF en « Taille réelle » / 100 % sur papier normal.',
+    cutStep2:
+      "Découper exactement le long de la fine ligne ({w} × {h} mm). Le parchemin à l'extérieur n'est qu'un fond perdu.",
+    cutStep3:
+      'Coller sur une carte vierge avec un bâton de colle – la bordure brune reste visible.',
+    cardHint: 'Imprimer en « Taille réelle » / 100 %.',
+    testDescCutout:
+      "Cadre au format carte avec surface intérieure en pointillés – pour vérifier l'échelle et la largeur de bordure.",
+    step3Cutout:
+      'Poser une vraie carte sur le cadre : la ligne pointillée doit tomber exactement sur le bord intérieur de la bordure brune. Sinon ajuster la largeur de bordure.',
+    innerHere: 'Surface intérieure = ligne de coupe',
+    pdfSizeInner: 'Carte {w} × {h} mm, surface intérieure {iw} × {ih} mm',
+    innerSize: 'Surface intérieure (ligne de coupe) : {w} × {h} mm',
+    previewHintCutout:
+      'Clair : surface imprimée avec fond perdu. Ligne foncée : ligne de coupe. Pointillés : vraie carte.',
     title: 'Impression',
     subtitle:
       "Imprimer une carte au centre d'une feuille A4 – exactement là où la carte vierge est collée.",
@@ -18,16 +58,15 @@ export const fr = {
     cardDesc: "Imprime la carte ouverte dans l'éditeur.",
     currentCard: 'Carte actuelle :',
     withFrame: 'Imprimer un cadre de contrôle',
-    withFrameDesc:
-      'Pour un essai sur papier normal : poser la feuille sur la page test et regarder à contre-jour.',
     cardButton: 'Télécharger la carte en PDF',
-    cardHint:
-      "Imprimer en « Taille réelle » / 100 %. L'impression du cadre et du parchemin se règle dans Paramètres → Design des cartes.",
     printError: "Impossible de créer le fichier d'impression.",
     sizeTitle: 'Dimensions et position',
     sizeDesc:
       "Valable pour la page test et l'impression. Le décalage déplace les deux de la même façon.",
     field: {
+      frameMm: 'Largeur de la bordure brune',
+      innerRadiusMm: 'Rayon des coins de la ligne de coupe',
+      bleedMm: 'Fond perdu hors de la ligne de coupe',
       cardWidthMm: 'Largeur',
       cardHeightMm: 'Hauteur',
       cornerRadiusMm: 'Rayon des coins',

@@ -13,6 +13,47 @@ export const de: TranslationDictionary = {
     settings: 'Einstellungen',
   },
   print: {
+    modeTitle: 'Druckart',
+    mode: {
+      cutout: 'Zum Ausschneiden (Papier)',
+      direct: 'Direkt auf Blanko-Karte',
+      full: 'Ganze Karte mit Rand',
+    },
+    modeDesc: {
+      cutout:
+        'Druckt nur die Innenfläche mit Pergament, Text und Bild – ohne den braunen Rand. Ausschneiden und auf eine leere Karte kleben; den Rand liefert die Karte.',
+      direct:
+        'Druckt nur Text und Bild direkt auf eine aufgeklebte Blanko-Karte (Rand und Pergament sind schon auf der Karte).',
+      full: 'Druckt die komplette Karte mit braunem Rand und Pergament.',
+    },
+    modeSubtitle: {
+      cutout:
+        'Innenfläche der Karte auf normales Papier drucken, an der Linie ausschneiden und auf eine leere Karte kleben.',
+      direct:
+        'Eine Karte mittig auf ein A4-Blatt drucken – genau dorthin, wo die Blanko-Karte aufgeklebt ist.',
+      full: 'Eine komplette Karte mittig auf ein A4-Blatt drucken.',
+    },
+    withFrameDesc: {
+      cutout: 'Zeigt zusätzlich gestrichelt die Außenkante der ganzen Karte.',
+      direct:
+        'Für einen Probedruck auf normalem Papier: Blatt auf die Testseite legen und gegen das Licht halten.',
+      full: 'Dünne Linie um die ganze Karte, z. B. als Schnittlinie.',
+    },
+    cutStep1: 'PDF mit „Tatsächliche Größe“ / 100 % auf normales Papier drucken.',
+    cutStep2:
+      'Genau an der dünnen Linie ausschneiden ({w} × {h} mm). Das Pergament außerhalb der Linie ist nur Überstand.',
+    cutStep3:
+      'Mit Klebestift auf eine leere Karte kleben – der braune Rand der Karte bleibt rundherum sichtbar.',
+    cardHint: 'Mit „Tatsächliche Größe“ / 100 % drucken.',
+    testDescCutout:
+      'Rahmen in Kartengröße mit gestrichelter Innenfläche – zum Prüfen von Maßstab und Randbreite (echte Karte auflegen).',
+    step3Cutout:
+      'Eine echte Karte auf den Rahmen legen: Die gestrichelte Linie muss genau auf der Innenkante des braunen Randes liegen. Sonst die Randbreite anpassen.',
+    innerHere: 'Innenfläche = Schnittlinie',
+    pdfSizeInner: 'Karte {w} × {h} mm, Innenfläche {iw} × {ih} mm',
+    innerSize: 'Innenfläche (Schnittlinie): {w} × {h} mm',
+    previewHintCutout:
+      'Hell: gedruckte Fläche mit Überstand. Dunkle Linie: Schnittlinie. Gestrichelt: echte Karte.',
     title: 'Drucken',
     subtitle:
       'Eine Karte mittig auf ein A4-Blatt drucken – genau dorthin, wo die Blanko-Karte aufgeklebt ist.',
@@ -20,15 +61,14 @@ export const de: TranslationDictionary = {
     cardDesc: 'Druckt die Karte, die gerade im Editor geöffnet ist.',
     currentCard: 'Aktuelle Karte:',
     withFrame: 'Kontrollrahmen mitdrucken',
-    withFrameDesc:
-      'Für einen Probedruck auf normalem Papier: Blatt auf die Testseite legen und gegen das Licht halten.',
     cardButton: 'Karte als PDF herunterladen',
-    cardHint:
-      'Mit „Tatsächliche Größe“ / 100 % drucken. Ob Rahmen und Pergament mitgedruckt werden, stellst du unter Einstellungen → Kartendesign ein.',
     printError: 'Druckdatei konnte nicht erstellt werden.',
     sizeTitle: 'Kartenmaße und Position',
     sizeDesc: 'Gilt für Testseite und Kartendruck. Der Druckerversatz verschiebt beides gleich.',
     field: {
+      frameMm: 'Breite des braunen Randes',
+      innerRadiusMm: 'Eckenradius der Schnittlinie',
+      bleedMm: 'Überstand außerhalb der Schnittlinie',
       cardWidthMm: 'Breite',
       cardHeightMm: 'Höhe',
       cornerRadiusMm: 'Eckenradius',

@@ -13,6 +13,44 @@ export const en: TranslationDictionary = {
     settings: 'Settings',
   },
   print: {
+    modeTitle: 'Print mode',
+    mode: {
+      cutout: 'Cut out (paper)',
+      direct: 'Directly onto a blank card',
+      full: 'Whole card with border',
+    },
+    modeDesc: {
+      cutout:
+        'Prints only the inner area with parchment, text and image – without the brown border. Cut out and glue onto a blank card; the card provides the border.',
+      direct: 'Prints only text and image directly onto a blank card glued to the sheet.',
+      full: 'Prints the complete card with brown border and parchment.',
+    },
+    modeSubtitle: {
+      cutout: 'Print the inner area on plain paper, cut along the line and glue onto a blank card.',
+      direct: 'Print one card centred on A4 – exactly where the blank card is glued.',
+      full: 'Print one complete card centred on A4.',
+    },
+    withFrameDesc: {
+      cutout: 'Also shows the outer edge of the whole card as a dashed line.',
+      direct:
+        'For a test print on plain paper: lay the sheet on the test page and hold it against the light.',
+      full: 'Thin line around the whole card, e.g. as a cutting line.',
+    },
+    cutStep1: 'Print the PDF at "Actual size" / 100 % on plain paper.',
+    cutStep2:
+      'Cut exactly along the thin line ({w} × {h} mm). The parchment outside the line is only bleed.',
+    cutStep3:
+      'Glue onto a blank card with a glue stick – the brown border of the card stays visible.',
+    cardHint: 'Print at "Actual size" / 100 %.',
+    testDescCutout:
+      'Card-size frame with dashed inner area – to check scale and border width (lay a real card on it).',
+    step3Cutout:
+      'Lay a real card on the frame: the dashed line must sit exactly on the inner edge of the brown border. Otherwise adjust the border width.',
+    innerHere: 'Inner area = cutting line',
+    pdfSizeInner: 'Card {w} × {h} mm, inner area {iw} × {ih} mm',
+    innerSize: 'Inner area (cutting line): {w} × {h} mm',
+    previewHintCutout:
+      'Light: printed area with bleed. Dark line: cutting line. Dashed: real card.',
     title: 'Print',
     subtitle:
       'Print one card in the centre of an A4 sheet – exactly where the blank card is glued.',
@@ -20,16 +58,15 @@ export const en: TranslationDictionary = {
     cardDesc: 'Prints the card currently open in the editor.',
     currentCard: 'Current card:',
     withFrame: 'Print control frame',
-    withFrameDesc:
-      'For a test print on plain paper: place the sheet on the test page and hold it against the light.',
     cardButton: 'Download card as PDF',
-    cardHint:
-      'Print at "Actual size" / 100 %. Whether frame and parchment are printed is set under Settings → Card Design.',
     printError: 'Could not create the print file.',
     sizeTitle: 'Card size and position',
     sizeDesc:
       'Used for the test page and card printing. The printer offset moves both the same way.',
     field: {
+      frameMm: 'Width of the brown border',
+      innerRadiusMm: 'Corner radius of the cutting line',
+      bleedMm: 'Bleed outside the cutting line',
       cardWidthMm: 'Width',
       cardHeightMm: 'Height',
       cornerRadiusMm: 'Corner radius',

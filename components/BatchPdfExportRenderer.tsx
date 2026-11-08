@@ -9,10 +9,15 @@ import { useTranslation } from '../i18n/LanguageContext';
 import {
   PAGE_H,
   PAGE_W,
+  PrintMode,
+  Rect,
   computePrintLayout,
   drawCornerMarks,
   fitIntoSlot,
+  normalizePrintMode,
+  placeCardImage,
 } from '../utils/printLayout';
+import { prepareCutout } from '../utils/printCrop';
 
 interface BatchPdfExportRendererProps {
   cards: CardData[];
@@ -47,12 +52,19 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
   const CARDS_PER_PAGE = printLayout.perPage;
   const CHUNK_SIZE = CARDS_PER_PAGE * 9; // max. 9 Seiten pro PDF
   const { cardWidthMm: CARD_W, cardHeightMm: CARD_H } = printLayout.settings;
-  // Klassisches Design ohne Rahmen/Pergament: nur Text + Bild auf weißem Papier
-  const textOnlyPrint =
-    (globalSettings?.cardDesign ?? 'classic') === 'classic' && !globalSettings?.printFrame;
+  // Druckart aus dem Tab "Drucken" (nur klassisches Design kennt Ausschneiden / Blanko-Karte)
+  const printMode: PrintMode =
+    (globalSettings?.cardDesign ?? 'classic') === 'classic'
+      ? normalizePrintMode(globalSettings?.printMode)
+      : 'full';
+  const textOnlyPrint = printMode === 'direct'; // nur Text + Bild auf weißem Papier
+  const isCutout = printMode === 'cutout'; // Innenfläche zum Ausschneiden
+  const surface = isCutout ? 'parchment' : textOnlyPrint ? 'textOnly' : 'full';
   const exportRef = useRef<HTMLDivElement>(null);
   const pdfRef = useRef<jsPDF | null>(null);
-  const capturedCardsRef = useRef<{ imgData: string; category: string }[]>([]);
+  const capturedCardsRef = useRef<
+    { imgData: string; category: string; target?: Rect; bleedMm?: number }[]
+  >([]);
 
   const isProcessingRef = useRef(false);
   const cancelledRef = useRef(false);
@@ -249,11 +261,14 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
           fontEmbedCSS: fontCSSRef.current,
         };
 
-        const imgData = await toJpeg(exportRef.current, options);
+        const rendered = await toJpeg(exportRef.current, options);
+        const cut = isCutout ? await prepareCutout(rendered, printLayout, 'image/jpeg') : undefined;
 
         capturedCardsRef.current.push({
-          imgData,
+          imgData: cut ? cut.img : rendered,
           category: getCardCategory(cards[currentIndex]),
+          target: cut?.target,
+          bleedMm: cut?.bleedMm,
         });
 
         if (capturedCardsRef.current.length % CARDS_PER_PAGE === 0) {
@@ -303,19 +318,30 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
       // --- PAGE RECTO (FACES) ---
       if (p > 0 || pdf.internal.getNumberOfPages() > 1) pdf.addPage();
 
-      if (!textOnlyPrint) {
+      if (printMode === 'full') {
         pdf.setFillColor(COLOR_BG_FACE);
         pdf.rect(0, 0, PAGE_W, PAGE_H, 'F');
       }
-      drawCutLines(pdf);
 
-      pageCards.forEach((card, i) => {
-        const r = fitIntoSlot(printLayout.slots[i], printLayout.settings, CARD_IMG_RATIO);
-        pdf.addImage(card.imgData, 'JPEG', r.x, r.y, r.w, r.h);
-      });
+      if (isCutout) {
+        // Schnittlinie und Marken zeichnet placeCardImage
+        pageCards.forEach((card) =>
+          placeCardImage(pdf, printLayout, card.imgData, 'JPEG', 'cutout', {
+            imgRatio: CARD_IMG_RATIO,
+            cutoutTarget: card.target,
+            bleedMm: card.bleedMm,
+          }),
+        );
+      } else {
+        drawCutLines(pdf);
+        pageCards.forEach((card, i) => {
+          const r = fitIntoSlot(printLayout.slots[i], printLayout.settings, CARD_IMG_RATIO);
+          pdf.addImage(card.imgData, 'JPEG', r.x, r.y, r.w, r.h);
+        });
+      }
 
-      // --- PAGE VERSO (BACKS) --- (entfällt bei Blanko-Karten: Rückseiten sind schon gedruckt)
-      if (textOnlyPrint) continue;
+      // --- PAGE VERSO (BACKS) --- (nur bei ganzer Karte; leere/Blanko-Karten haben schon Rückseiten)
+      if (printMode !== 'full') continue;
       pdf.addPage();
 
       const firstCardCat = pageCards[0].category;
@@ -361,6 +387,7 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
         data={currentCard}
         layoutSrc={getLayoutSource(currentCard, globalSettings)}
         globalSettings={globalSettings}
+        surface={surface}
       />
     </div>
   );

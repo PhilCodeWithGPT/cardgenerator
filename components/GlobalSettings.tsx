@@ -459,24 +459,6 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
                   );
                 })}
               </div>
-              {(settings.cardDesign ?? 'classic') === 'classic' && (
-                <label className="mt-4 flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 accent-amber-700"
-                    checked={!!settings.printFrame}
-                    onChange={(e) => onChange({ ...settings, printFrame: e.target.checked })}
-                  />
-                  <span>
-                    <span className="font-bold text-stone-800 block text-sm">
-                      {t('globalSettings.printFrame')}
-                    </span>
-                    <span className="text-xs text-stone-500">
-                      {t('globalSettings.printFrameDesc')}
-                    </span>
-                  </span>
-                </label>
-              )}
             </div>
           </section>
 

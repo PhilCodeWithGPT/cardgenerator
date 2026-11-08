@@ -22,6 +22,7 @@ export const CLASSIC_WIDTH = 661;
 export const CLASSIC_HEIGHT = 1028;
 
 const FRAME = 34; // brown border thickness
+export const CLASSIC_FRAME = FRAME;
 const PAD_X = 40; // Innenabstand links/rechts
 const PAD_TOP = 34;
 const PAD_BOTTOM = 30;
@@ -37,8 +38,12 @@ const FONT_BODY = '"Libre Caslon Text", "Caslon Antique", "IM Fell DW Pica", ser
 interface ClassicCardFaceProps {
   data: CardData;
   globalSettings?: GlobalSettings;
-  /** Nur Text und Bild (für Blanko-Karten, auf denen Rahmen und Pergament schon gedruckt sind). */
-  textOnly?: boolean;
+  /**
+   * full = ganze Karte; textOnly = nur Text und Bild (Druck direkt auf Blanko-Karte);
+   * parchment = Pergament über die ganze Fläche ohne braunen Rand (Druck zum Ausschneiden:
+   * die Innenfläche wird herausgeschnitten, das Pergament dient als Überstand).
+   */
+  surface?: 'full' | 'textOnly' | 'parchment';
 }
 
 const resolveImageSrc = (data: CardData): string | undefined => {
@@ -70,7 +75,9 @@ const toLines = (text: string | undefined): string[] => {
 };
 
 const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
-  ({ data, globalSettings, textOnly = false }, ref) => {
+  ({ data, globalSettings, surface = 'full' }, ref) => {
+    const textOnly = surface === 'textOnly';
+    const parchmentOnly = surface === 'parchment';
     const language = globalSettings?.language || 'de';
     const labels = CARD_LABELS[language];
     const imageSrc = resolveImageSrc(data);
@@ -174,10 +181,12 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
         style={{
           width: `${CLASSIC_WIDTH}px`,
           height: `${CLASSIC_HEIGHT}px`,
-          borderRadius: '38px',
+          borderRadius: parchmentOnly ? 0 : '38px',
           background: textOnly
             ? 'transparent'
-            : 'linear-gradient(160deg, #5a3626 0%, #4a2a1d 45%, #3a2016 100%)',
+            : parchmentOnly
+              ? '#f6dcb8'
+              : 'linear-gradient(160deg, #5a3626 0%, #4a2a1d 45%, #3a2016 100%)',
           boxSizing: 'border-box',
           position: 'relative',
           overflow: 'hidden', // erst am Kartenrand abschneiden
@@ -188,11 +197,11 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           <div
             style={{
               position: 'absolute',
-              inset: `${FRAME}px`,
-              borderRadius: '26px',
+              inset: parchmentOnly ? 0 : `${FRAME}px`,
+              borderRadius: parchmentOnly ? 0 : '26px',
               background:
                 'radial-gradient(ellipse 90% 75% at 50% 42%, #fbebd2 0%, #f6dcb8 55%, #ecc799 85%, #e2b585 100%)',
-              boxShadow: 'inset 0 0 18px rgba(120, 70, 30, 0.35)',
+              boxShadow: parchmentOnly ? 'none' : 'inset 0 0 18px rgba(120, 70, 30, 0.35)',
             }}
           />
         )}
@@ -201,8 +210,8 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           <div
             style={{
               position: 'absolute',
-              inset: `${FRAME}px`,
-              borderRadius: '26px',
+              inset: parchmentOnly ? 0 : `${FRAME}px`,
+              borderRadius: parchmentOnly ? 0 : '26px',
               opacity: 0.18,
               mixBlendMode: 'multiply',
               background:

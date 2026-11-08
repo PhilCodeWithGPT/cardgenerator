@@ -14,7 +14,7 @@ export enum CardType {
 
 export type CardLayout = 'standard';
 
-import type { PrintSettings } from './utils/printLayout';
+import type { PrintMode, PrintSettings } from './utils/printLayout';
 
 export type CardLanguage = 'fr' | 'en' | 'de';
 
@@ -113,8 +113,10 @@ export interface GlobalSettings {
   language: CardLanguage;
   // Card front design ('classic' = printed-card look, 'modern' = original PNG layouts)
   cardDesign?: CardDesign;
-  // Classic design: also print brown frame + parchment (false = text and image only, for pre-printed blank cards)
+  // Veraltet (vor Druckart): true = Rand + Pergament mitdrucken
   printFrame?: boolean;
+  // Druckart: cutout = Innenfläche zum Ausschneiden, direct = auf Blanko-Karte, full = ganze Karte
+  printMode?: PrintMode;
   // A4 print grid (card size, gap, printer offset) shared by test page and card PDF
   print?: PrintSettings;
   // Default pre-prompt for AI image generation

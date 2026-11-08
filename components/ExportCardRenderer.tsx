@@ -10,6 +10,8 @@ interface ExportCardRendererProps {
   layoutSrc: string;
   descriptionFontSize?: number;
   globalSettings?: GlobalSettings;
+  /** Nur klassisches Design: ganze Karte (Standard), nur Text+Bild oder Pergament ohne Rand */
+  surface?: 'full' | 'textOnly' | 'parchment';
 }
 
 // Dimensions natives des layouts
@@ -17,7 +19,10 @@ const REF_WIDTH = 661;
 const REF_HEIGHT = 1028;
 
 const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
-  ({ data, layoutSrc, descriptionFontSize: externalFontSize, globalSettings }, ref) => {
+  (
+    { data, layoutSrc, descriptionFontSize: externalFontSize, globalSettings, surface = 'full' },
+    ref,
+  ) => {
     // Internal text fitter for when no external font size is provided (e.g. batch export)
     const descContainerRef = useRef<HTMLDivElement>(null);
     const [internalFontSize, setInternalFontSize] = useState(26);
@@ -63,12 +68,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
 
     if ((globalSettings?.cardDesign ?? 'classic') === 'classic') {
       return (
-        <ClassicCardFace
-          ref={ref}
-          data={data}
-          globalSettings={globalSettings}
-          textOnly={!globalSettings?.printFrame}
-        />
+        <ClassicCardFace ref={ref} data={data} globalSettings={globalSettings} surface={surface} />
       );
     }
 
