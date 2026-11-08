@@ -187,7 +187,7 @@ export const fr = {
     prev: 'Précédent',
     next: 'Suivant',
     counter: 'Carte {current} sur {total}',
-    keyboardHint: '← → pour naviguer',
+    keyboardHint: "Les flèches déplacent l'image",
     prevTitle: 'Carte précédente : {title}',
     nextTitle: 'Carte suivante : {title}',
   },
@@ -249,9 +249,14 @@ export const fr = {
     treasurePlural: '{count} trésors',
   },
   cardForm: {
-    alignLeft: 'Gauche',
-    alignJustify: 'Justifié',
-    alignCenter: 'Centré',
+    align: {
+      left: 'Gauche',
+      right: 'Droite',
+      justify: 'Justifié',
+      center: 'Centré',
+    },
+    arrowHint:
+      "Les flèches ← → ↑ ↓ déplacent l'image (avec Maj par grands pas) quand aucun champ n'est actif.",
     textIndent: 'Retrait de paragraphe',
     textFormatHint:
       "Les retours à la ligne, lignes vides et espaces sont repris tels quels – pour faire épouser au texte la forme d'une image (déplacer l'image vers le haut avec Position Y).",

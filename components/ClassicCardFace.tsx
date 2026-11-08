@@ -1,5 +1,5 @@
 import React, { forwardRef, useLayoutEffect, useRef } from 'react';
-import { CardData, CardType, GlobalSettings } from '../types';
+import { CardData, CardType, GlobalSettings, TextAlign } from '../types';
 import { formatBonus } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
 import { CARD_LABELS, translateItemSlotFor } from '../utils/cardLabels';
@@ -9,14 +9,27 @@ import { CARD_LABELS, translateItemSlotFor } from '../utils/cardLabels';
  * brown rounded frame, plain parchment face, a small-caps line ("+5 Bonus" / "Stufe 10"),
  * small-caps title, running text, illustration, footer with "Groß" left and slot + gold right.
  * Rendered at native export size (661x1028). Previews scale it down with CSS transforms.
+ *
+ * Aufbau in Ebenen, damit sich beim Tippen nichts verschiebt:
+ *  - Bild: fester Platz (Bildfeld), nur über Position X/Y + Größe verschiebbar, liegt UNTER dem Text
+ *  - Text: feste Schriftgröße, läuft von oben nach unten und darf Bild und Karte überlappen
+ *    (abgeschnitten wird erst am Kartenrand)
+ *  - unten verankert: "Schlimme Dinge" und Fußzeile (Groß / Slot / Gold)
  */
 
 export const CLASSIC_WIDTH = 661;
 export const CLASSIC_HEIGHT = 1028;
 
 const FRAME = 34; // brown border thickness
+const PAD_X = 40; // Innenabstand links/rechts
+const PAD_TOP = 34;
+const PAD_BOTTOM = 30;
 const INK = '#2a1a10';
 const TITLE_INK = '#3b2a1e';
+const BODY_FONT_SIZE = 31; // fest – Text wird bei mehr Inhalt nicht kleiner
+
+// Fester Bildplatz innerhalb der Pergamentfläche (Bild wird darin zentriert)
+const IMAGE_BOX = { top: 250, bottom: 110, left: PAD_X, right: PAD_X };
 
 const FONT_TITLE = '"IM Fell English SC", "Windlass", serif';
 const FONT_BODY = '"Libre Caslon Text", "Caslon Antique", "IM Fell DW Pica", serif';
@@ -50,13 +63,18 @@ const withLiningDigits = (text: string): React.ReactNode[] =>
     ),
   );
 
+/** Text zeilengenau wie eingegeben: Umbrüche, Leerzeilen (auch am Anfang!) und Leerzeichen bleiben. */
+const toLines = (text: string | undefined): string[] => {
+  const t = (text ?? '').replace(/\s+$/, ''); // nur Ende kürzen
+  return t.trim() === '' ? [] : t.split('\n');
+};
+
 const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
   ({ data, globalSettings, textOnly = false }, ref) => {
     const language = globalSettings?.language || 'de';
     const labels = CARD_LABELS[language];
     const imageSrc = resolveImageSrc(data);
 
-    const bodyRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
 
     // --- Kopfzeile: "Stufe 10" / "+5 Bonus" / "Fluch!" ---
@@ -93,74 +111,43 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
         : '';
     const leftFooter = isItem && data.isBig ? labels.big : levelsGained;
 
-    const hasDescription = !!data.description?.trim() || !!data.restrictions?.trim();
-    // Textformat: Ausrichtung + Absatz-Einzug (Standard wie auf den gedruckten Karten: links, mit Einzug)
-    const textAlign = data.textAlign ?? 'left';
-    const indent = data.textIndent === false ? 0 : '0.6em';
-    // Leerzeilen am Anfang/Ende ignorieren, alles dazwischen bleibt wie eingegeben
-    const descriptionLines = (data.description ?? '').replace(/^\s*\n|\n\s*$/g, '').split('\n');
-    if (descriptionLines.length === 1 && descriptionLines[0].trim() === '')
-      descriptionLines.length = 0;
+    // --- Textblöcke, jeder mit eigener Ausrichtung ---
+    const descAlign: TextAlign = data.textAlign ?? 'left';
+    const restrAlign: TextAlign = data.restrictionsAlign ?? 'left';
+    const badAlign: TextAlign = data.badStuffAlign ?? 'left';
+    // Einzug nur bei links/Blocksatz sinnvoll
+    const indentFor = (align: TextAlign) =>
+      data.textIndent === false || align === 'center' || align === 'right' ? 0 : '0.6em';
+    const descriptionLines = toLines(data.description);
+    const restrictions = data.restrictions?.trim() ? data.restrictions : '';
     const hasBadStuff = data.type === CardType.MONSTER && !!data.badStuff?.trim();
 
-    // --- Text einpassen: Fließtext verkleinern, bis Bild + Text in die Karte passen ---
+    // --- Nur der Titel wird eingepasst (eine Zeile bevorzugt, sonst zwei) ---
     useLayoutEffect(() => {
-      const body = bodyRef.current;
       const title = titleRef.current;
       let cancelled = false;
-
       const fit = () => {
-        if (cancelled) return;
-        if (title) {
-          const lines = (size: number) => Math.round(title.scrollHeight / (size * 1.04));
-          const setSize = (size: number) => (title.style.fontSize = `${size}px`);
-          // 1. Versuch: eine Zeile, notfalls bis 46 px verkleinern (wie auf den gedruckten Karten)
-          let ts = 66;
+        if (cancelled || !title) return;
+        const lines = (size: number) => Math.round(title.scrollHeight / (size * 1.04));
+        const setSize = (size: number) => (title.style.fontSize = `${size}px`);
+        let ts = 66;
+        setSize(ts);
+        while (ts > 46 && (lines(ts) > 1 || title.scrollWidth > title.clientWidth))
+          setSize((ts -= 2));
+        if (lines(ts) > 1 || title.scrollWidth > title.clientWidth) {
+          ts = 62;
           setSize(ts);
-          while (ts > 46 && (lines(ts) > 1 || title.scrollWidth > title.clientWidth))
+          while (ts > 34 && (lines(ts) > 2 || title.scrollWidth > title.clientWidth))
             setSize((ts -= 2));
-          // 2. Sonst: max. 2 Zeilen, keine Überbreite
-          if (lines(ts) > 1 || title.scrollWidth > title.clientWidth) {
-            ts = 62;
-            setSize(ts);
-            while (ts > 34 && (lines(ts) > 2 || title.scrollWidth > title.clientWidth))
-              setSize((ts -= 2));
-          }
-        }
-        if (body) {
-          const minImage = imageSrc ? 260 : 0;
-          let fs = 31;
-          body.style.setProperty('--classic-fs', `${fs}px`);
-          const overflow = () => {
-            const textEls = body.querySelectorAll<HTMLElement>('[data-classic-text]');
-            let textHeight = 0;
-            textEls.forEach((el) => (textHeight += el.offsetHeight));
-            return textHeight + minImage > body.clientHeight;
-          };
-          while (fs > 17 && overflow()) {
-            fs -= 1;
-            body.style.setProperty('--classic-fs', `${fs}px`);
-          }
         }
       };
-
       fit();
       // Schriften laden asynchron nach → erneut einpassen
       if (document.fonts?.ready) document.fonts.ready.then(fit);
       return () => {
         cancelled = true;
       };
-    }, [
-      data.title,
-      data.description,
-      data.restrictions,
-      data.badStuff,
-      data.textAlign,
-      data.textIndent,
-      data.type,
-      imageSrc,
-      headline,
-    ]);
+    }, [data.title, headline]);
 
     const metaStyle: React.CSSProperties = {
       fontFamily: FONT_BODY,
@@ -169,6 +156,15 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
       color: INK,
       lineHeight: 1.1,
       whiteSpace: 'nowrap',
+    };
+
+    const bodyText: React.CSSProperties = {
+      fontFamily: FONT_BODY,
+      fontSize: `${BODY_FONT_SIZE}px`,
+      lineHeight: 1.32,
+      hyphens: 'auto',
+      whiteSpace: 'pre-wrap',
+      margin: 0,
     };
 
     return (
@@ -181,10 +177,9 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           background: textOnly
             ? 'transparent'
             : 'linear-gradient(160deg, #5a3626 0%, #4a2a1d 45%, #3a2016 100%)',
-          padding: `${FRAME}px`,
           boxSizing: 'border-box',
           position: 'relative',
-          overflow: 'hidden',
+          overflow: 'hidden', // erst am Kartenrand abschneiden
         }}
       >
         {/* Pergament */}
@@ -215,18 +210,49 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           />
         )}
 
-        {/* Inhalt */}
+        {/* Ebene 1: Bild an festem Platz – unabhängig vom Text */}
+        {imageSrc && (
+          <div
+            style={{
+              position: 'absolute',
+              top: FRAME + IMAGE_BOX.top,
+              bottom: FRAME + IMAGE_BOX.bottom,
+              left: FRAME + IMAGE_BOX.left,
+              right: FRAME + IMAGE_BOX.right,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}
+          >
+            <img
+              src={imageSrc}
+              alt="Art"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                mixBlendMode: 'multiply',
+                transform: `scale(${(data.imageScale || 100) / 100}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)${data.imageFlipX ? ' scaleX(-1)' : ''}`,
+              }}
+            />
+          </div>
+        )}
+
+        {/* Ebene 2: Kopf, Titel und Text – liegt über dem Bild */}
         <div
+          lang={language}
           style={{
             position: 'absolute',
-            inset: `${FRAME}px`,
-            padding: '34px 40px 30px',
-            display: 'flex',
-            flexDirection: 'column',
+            top: FRAME + PAD_TOP,
+            left: FRAME + PAD_X,
+            right: FRAME + PAD_X,
             color: INK,
+            zIndex: 2,
           }}
         >
-          {/* Kopfzeile */}
           {headline && (
             <div
               style={{
@@ -242,7 +268,6 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
             </div>
           )}
 
-          {/* Titel */}
           <h2
             ref={titleRef}
             style={{
@@ -257,122 +282,71 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
               overflowWrap: 'break-word',
               hyphens: 'auto',
             }}
-            lang={language}
           >
             {withLiningDigits(data.title || '')}
           </h2>
 
-          {/* Text + Bild */}
-          <div
-            ref={bodyRef}
-            style={
-              {
-                flex: 1,
-                minHeight: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                marginTop: '16px',
-                '--classic-fs': '31px',
-              } as React.CSSProperties
-            }
-          >
-            {hasDescription && (
-              <div
-                data-classic-text
-                lang={language}
+          <div style={{ marginTop: '16px' }}>
+            {restrictions && (
+              <p
                 style={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 'var(--classic-fs)',
-                  lineHeight: 1.32,
-                  hyphens: 'auto',
-                  paddingBottom: '6px',
+                  ...bodyText,
+                  marginBottom: '6px',
+                  fontStyle: 'italic',
+                  textAlign: restrAlign,
+                  textIndent: indentFor(restrAlign),
                 }}
               >
-                {data.restrictions?.trim() && (
-                  <p
-                    style={{
-                      margin: '0 0 6px',
-                      textIndent: indent,
-                      fontStyle: 'italic',
-                      textAlign,
-                    }}
-                  >
-                    {data.restrictions}
-                  </p>
-                )}
-                {/* Jede Zeile wie eingegeben: Umbrüche, Leerzeilen und Leerzeichen bleiben erhalten,
-                    damit man den Text um ein übergelegtes Bild herum formen kann. */}
-                {descriptionLines.map((line, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      margin: 0,
-                      whiteSpace: 'pre-wrap',
-                      textAlign,
-                      textIndent: i === 0 || descriptionLines[i - 1].trim() === '' ? indent : 0,
-                    }}
-                  >
-                    {line === '' ? ' ' : line}
-                  </p>
-                ))}
-              </div>
+                {restrictions}
+              </p>
             )}
+            {descriptionLines.map((line, i) => (
+              <p
+                key={i}
+                style={{
+                  ...bodyText,
+                  textAlign: descAlign,
+                  textIndent:
+                    i === 0 || descriptionLines[i - 1].trim() === '' ? indentFor(descAlign) : 0,
+                }}
+              >
+                {line === '' ? ' ' : line}
+              </p>
+            ))}
+          </div>
+        </div>
 
-            {/* Bild */}
-            <div
+        {/* Ebene 3: unten verankert – Schlimme Dinge + Fußzeile */}
+        <div
+          style={{
+            position: 'absolute',
+            left: FRAME + PAD_X,
+            right: FRAME + PAD_X,
+            bottom: FRAME + PAD_BOTTOM,
+            color: INK,
+            zIndex: 3,
+          }}
+        >
+          {hasBadStuff && (
+            <p
+              lang={language}
               style={{
-                flex: 1,
-                minHeight: 0,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                ...bodyText,
+                lineHeight: 1.28,
+                paddingBottom: '8px',
+                textAlign: badAlign,
+                textIndent: 0, // kein Einzug: alle Zeilen bündig
               }}
             >
-              {imageSrc && (
-                <img
-                  src={imageSrc}
-                  alt="Art"
-                  crossOrigin="anonymous"
-                  referrerPolicy="no-referrer"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    mixBlendMode: 'multiply',
-                    transform: `scale(${(data.imageScale || 100) / 100}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)${data.imageFlipX ? ' scaleX(-1)' : ''}`,
-                  }}
-                />
-              )}
-            </div>
-
-            {hasBadStuff && (
-              <div
-                data-classic-text
-                lang={language}
-                style={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 'var(--classic-fs)',
-                  lineHeight: 1.28,
-                  hyphens: 'auto',
-                  paddingTop: '6px',
-                  whiteSpace: 'pre-wrap',
-                  textAlign,
-                }}
-              >
-                <span style={{ fontWeight: 700 }}>{labels.badStuff}</span>
-                {data.badStuff}
-              </div>
-            )}
-          </div>
-
-          {/* Fußzeile */}
+              <span style={{ fontWeight: 700 }}>{labels.badStuff}</span>
+              {data.badStuff}
+            </p>
+          )}
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-end',
-              marginTop: '8px',
               minHeight: '40px',
             }}
           >

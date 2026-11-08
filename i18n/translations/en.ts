@@ -187,7 +187,7 @@ export const en: TranslationDictionary = {
     prev: 'Previous',
     next: 'Next',
     counter: 'Card {current} of {total}',
-    keyboardHint: '← → to navigate',
+    keyboardHint: 'Arrow keys move the image',
     prevTitle: 'Previous card: {title}',
     nextTitle: 'Next card: {title}',
   },
@@ -249,9 +249,14 @@ export const en: TranslationDictionary = {
     treasurePlural: '{count} treasures',
   },
   cardForm: {
-    alignLeft: 'Left',
-    alignJustify: 'Justify',
-    alignCenter: 'Centre',
+    align: {
+      left: 'Left',
+      right: 'Right',
+      justify: 'Justify',
+      center: 'Centre',
+    },
+    arrowHint:
+      'Arrow keys ← → ↑ ↓ move the image (with Shift in big steps) when no input field is focused.',
     textIndent: 'Paragraph indent',
     textFormatHint:
       'Line breaks, blank lines and spaces are kept exactly – so you can shape the text around an image (then move the image up with Position Y).',

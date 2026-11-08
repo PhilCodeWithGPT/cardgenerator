@@ -190,7 +190,7 @@ export const de: TranslationDictionary = {
     prev: 'Zurück',
     next: 'Weiter',
     counter: 'Karte {current} von {total}',
-    keyboardHint: '← → zum Blättern',
+    keyboardHint: 'Pfeiltasten verschieben das Bild',
     prevTitle: 'Vorherige Karte: {title}',
     nextTitle: 'Nächste Karte: {title}',
   },
@@ -252,9 +252,14 @@ export const de: TranslationDictionary = {
     treasurePlural: '{count} Schätze',
   },
   cardForm: {
-    alignLeft: 'Links',
-    alignJustify: 'Blocksatz',
-    alignCenter: 'Zentriert',
+    align: {
+      left: 'Links',
+      right: 'Rechts',
+      justify: 'Blocksatz',
+      center: 'Zentriert',
+    },
+    arrowHint:
+      'Pfeiltasten ← → ↑ ↓ verschieben das Bild (mit Umschalt in großen Schritten), wenn kein Eingabefeld aktiv ist.',
     textIndent: 'Absatz-Einzug',
     textFormatHint:
       'Zeilenumbrüche, Leerzeilen und Leerzeichen werden genau so übernommen – so kannst du den Text um ein Bild herum formen (Bild dann mit Position Y nach oben schieben).',

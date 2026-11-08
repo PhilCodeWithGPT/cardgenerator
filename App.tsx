@@ -622,27 +622,38 @@ const App: React.FC = () => {
   // Keyboard navigation support (arrow keys)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only navigate if we're in the editor view and there are saved cards
-      if (activeView !== 'editor' || savedCards.length === 0) return;
-
-      // Prevent navigation if user is typing in an input or textarea
+      // Pfeiltasten verschieben im Editor das Bild (Umschalt = große Schritte).
+      // Nicht beim Tippen in Feldern oder in Auswahllisten.
+      if (activeView !== 'editor') return;
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      ) {
         return;
       }
-
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        navigateToSiblingCard('prev');
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        navigateToSiblingCard('next');
-      }
+      const step = e.shiftKey ? 5 : 1;
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [-step, 0],
+        ArrowRight: [step, 0],
+        ArrowUp: [0, -step],
+        ArrowDown: [0, step],
+      };
+      const move = moves[e.key];
+      if (!move) return;
+      e.preventDefault();
+      setCardData((prev) => ({
+        ...prev,
+        imageOffsetX: (prev.imageOffsetX || 0) + move[0],
+        imageOffsetY: (prev.imageOffsetY || 0) + move[1],
+      }));
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeView, savedCards, cardData, navigateToSiblingCard]); // Dependencies to keep the handler updated
+  }, [activeView]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

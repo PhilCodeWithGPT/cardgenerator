@@ -20,6 +20,8 @@ export type CardLanguage = 'fr' | 'en' | 'de';
 
 export type CardDesign = 'classic' | 'modern';
 
+export type TextAlign = 'left' | 'right' | 'justify' | 'center';
+
 export interface CardData {
   id: string; // Identifiant unique pour la persistance
   title: string;
@@ -43,7 +45,9 @@ export interface CardData {
   imageOffsetX?: number; // Décalage horizontal en %
   imageOffsetY?: number; // Décalage vertical en %
   imageFlipX?: boolean; // Bild waagerecht spiegeln (Blickrichtung umdrehen)
-  textAlign?: 'left' | 'justify' | 'center'; // Ausrichtung des Kartentexts (Standard links)
+  textAlign?: TextAlign; // Ausrichtung der Beschreibung (Standard links)
+  restrictionsAlign?: TextAlign; // Ausrichtung der Einschränkungen
+  badStuffAlign?: TextAlign; // Ausrichtung von "Schlimme Dinge" (Monster)
   textIndent?: boolean; // Absatz-Einzug (Standard an)
   descriptionBoxScale?: number; // Pourcentage de taille de l'encart description (défaut 100)
   isBaseCard: boolean;

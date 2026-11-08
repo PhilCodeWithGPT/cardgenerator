@@ -85,6 +85,25 @@ const CardForm: React.FC<CardFormProps> = ({
     return map[slot] || slot;
   };
 
+  // Ausrichtung je Textblock: links / rechts / Blocksatz / zentriert
+  const renderAlignPicker = (field: 'textAlign' | 'restrictionsAlign' | 'badStuffAlign') => (
+    <div className="inline-flex rounded border border-gray-300 overflow-hidden text-sm">
+      {(['left', 'right', 'justify', 'center'] as const).map((align) => {
+        const active = (cardData[field] ?? 'left') === align;
+        return (
+          <button
+            key={align}
+            type="button"
+            onClick={() => onChange({ ...cardData, [field]: align })}
+            className={`px-3 py-1 ${active ? 'bg-amber-700 text-white' : 'bg-white text-gray-700 hover:bg-amber-50'}`}
+          >
+            {t(`cardForm.align.${align}`)}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   const handleChange = (field: keyof CardData, value: string | number | boolean | CardLayout) => {
     onChange({ ...cardData, [field]: value });
   };
@@ -730,6 +749,7 @@ const CardForm: React.FC<CardFormProps> = ({
               placeholder={t('cardForm.restrictionsPlaceholder')}
               className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
+            <div className="mt-2">{renderAlignPicker('restrictionsAlign')}</div>
           </div>
         )}
 
@@ -858,6 +878,7 @@ const CardForm: React.FC<CardFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('cardForm.positionXY')}
             </label>
+            <p className="text-[11px] text-gray-500 mb-1">{t('cardForm.arrowHint')}</p>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -916,27 +937,7 @@ const CardForm: React.FC<CardFormProps> = ({
           />
           {/* Textformat */}
           <div className="flex flex-wrap items-center gap-3 mt-2">
-            <div className="inline-flex rounded border border-gray-300 overflow-hidden text-sm">
-              {(['left', 'justify', 'center'] as const).map((align) => {
-                const active = (cardData.textAlign ?? 'left') === align;
-                return (
-                  <button
-                    key={align}
-                    type="button"
-                    onClick={() => onChange({ ...cardData, textAlign: align })}
-                    className={`px-3 py-1 ${active ? 'bg-amber-700 text-white' : 'bg-white text-gray-700 hover:bg-amber-50'}`}
-                  >
-                    {t(
-                      align === 'left'
-                        ? 'cardForm.alignLeft'
-                        : align === 'justify'
-                          ? 'cardForm.alignJustify'
-                          : 'cardForm.alignCenter',
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {renderAlignPicker('textAlign')}
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="checkbox"
@@ -961,6 +962,7 @@ const CardForm: React.FC<CardFormProps> = ({
               rows={2}
               className="w-full p-2 border border-red-200 rounded focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50"
             />
+            <div className="mt-2">{renderAlignPicker('badStuffAlign')}</div>
           </div>
         )}
 
