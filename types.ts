@@ -45,6 +45,7 @@ export interface CardData {
   imageOffsetX?: number; // Décalage horizontal en %
   imageOffsetY?: number; // Décalage vertical en %
   imageFlipX?: boolean; // Bild waagerecht spiegeln (Blickrichtung umdrehen)
+  bodyFontSize?: number; // Schriftgröße des Kartentexts in px bei 661 px Kartenbreite (Standard 31)
   textAlign?: TextAlign; // Ausrichtung der Beschreibung (Standard links)
   restrictionsAlign?: TextAlign; // Ausrichtung der Einschränkungen
   badStuffAlign?: TextAlign; // Ausrichtung von "Schlimme Dinge" (Monster)

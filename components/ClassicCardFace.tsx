@@ -3,6 +3,7 @@ import { CardData, CardType, GlobalSettings, TextAlign } from '../types';
 import { formatBonus } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
 import { CARD_LABELS, translateItemSlotFor } from '../utils/cardLabels';
+import { clampFontSize, withGuillemets } from '../utils/typography';
 
 /**
  * "Klassisch" card front, modelled on the printed card style:
@@ -26,7 +27,6 @@ const PAD_TOP = 34;
 const PAD_BOTTOM = 30;
 const INK = '#2a1a10';
 const TITLE_INK = '#3b2a1e';
-const BODY_FONT_SIZE = 31; // fest – Text wird bei mehr Inhalt nicht kleiner
 
 // Fester Bildplatz innerhalb der Pergamentfläche (Bild wird darin zentriert)
 const IMAGE_BOX = { top: 250, bottom: 110, left: PAD_X, right: PAD_X };
@@ -65,7 +65,7 @@ const withLiningDigits = (text: string): React.ReactNode[] =>
 
 /** Text zeilengenau wie eingegeben: Umbrüche, Leerzeilen (auch am Anfang!) und Leerzeichen bleiben. */
 const toLines = (text: string | undefined): string[] => {
-  const t = (text ?? '').replace(/\s+$/, ''); // nur Ende kürzen
+  const t = withGuillemets(text ?? '').replace(/\s+$/, ''); // nur Ende kürzen
   return t.trim() === '' ? [] : t.split('\n');
 };
 
@@ -119,7 +119,7 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
     const indentFor = (align: TextAlign) =>
       data.textIndent === false || align === 'center' || align === 'right' ? 0 : '0.6em';
     const descriptionLines = toLines(data.description);
-    const restrictions = data.restrictions?.trim() ? data.restrictions : '';
+    const restrictions = data.restrictions?.trim() ? withGuillemets(data.restrictions) : '';
     const hasBadStuff = data.type === CardType.MONSTER && !!data.badStuff?.trim();
 
     // --- Nur der Titel wird eingepasst (eine Zeile bevorzugt, sonst zwei) ---
@@ -160,7 +160,8 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
 
     const bodyText: React.CSSProperties = {
       fontFamily: FONT_BODY,
-      fontSize: `${BODY_FONT_SIZE}px`,
+      // fest (wird bei mehr Inhalt nicht kleiner), pro Karte einstellbar
+      fontSize: `${clampFontSize(data.bodyFontSize)}px`,
       lineHeight: 1.32,
       hyphens: 'auto',
       whiteSpace: 'pre-wrap',
@@ -283,7 +284,7 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
               hyphens: 'auto',
             }}
           >
-            {withLiningDigits(data.title || '')}
+            {withLiningDigits(withGuillemets(data.title || ''))}
           </h2>
 
           <div style={{ marginTop: '16px' }}>
@@ -339,7 +340,7 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
               }}
             >
               <span style={{ fontWeight: 700 }}>{labels.badStuff}</span>
-              {data.badStuff}
+              {withGuillemets(data.badStuff || '')}
             </p>
           )}
           <div

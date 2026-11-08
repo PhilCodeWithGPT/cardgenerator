@@ -1,4 +1,4 @@
-import { CardLanguage } from '../types';
+import { CardLanguage, CardType } from '../types';
 
 /**
  * Labels printed on the cards themselves (depend on the "game language" setting,
@@ -78,4 +78,11 @@ const ITEM_SLOT_LABELS: Record<Exclude<CardLanguage, 'fr'>, Record<string, strin
 export function translateItemSlotFor(slot: string, language: CardLanguage | undefined): string {
   if (!language || language === 'fr') return slot;
   return ITEM_SLOT_LABELS[language][slot] || slot;
+}
+
+/** Übersetzungsschlüssel eines Kartentyps (z. B. CardType.FAITHFUL_SERVANT → "faithfulServant"). */
+export function cardTypeKey(type: CardType): string {
+  const key = Object.keys(CardType).find((k) => CardType[k as keyof typeof CardType] === type);
+  if (!key) return 'other';
+  return key.toLowerCase().replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 }

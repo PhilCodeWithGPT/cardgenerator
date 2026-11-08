@@ -15,6 +15,12 @@ import {
 import { useTranslation } from '../i18n/LanguageContext';
 import { translateItemSlotFor } from '../utils/cardLabels';
 import { AI_ENABLED } from '../utils/features';
+import {
+  DEFAULT_FONT_SIZE,
+  MIN_FONT_SIZE,
+  MAX_FONT_SIZE,
+  clampFontSize,
+} from '../utils/typography';
 
 interface CardFormProps {
   cardData: CardData;
@@ -26,6 +32,8 @@ interface CardFormProps {
   isSaving: boolean;
   hasScriptUrl: boolean;
   hasUnsavedChanges: boolean; // New: track if card has unsaved changes
+  /** Karte liegt schon auf dem Server */
+  isStored?: boolean;
   onImport: () => void;
 
   removeBgApiKey?: string; // remove.bg API key
@@ -49,6 +57,7 @@ const CardForm: React.FC<CardFormProps> = ({
   isSaving,
   hasScriptUrl,
   hasUnsavedChanges,
+  isStored = true,
   onImport,
   removeBgApiKey,
   geminiApiKey,
@@ -333,12 +342,12 @@ const CardForm: React.FC<CardFormProps> = ({
   }, [cardData.level, cardData.type]); // Only run when level or type changes
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 h-full overflow-y-auto">
-      <div className="flex items-center justify-between gap-2 mb-6 overflow-x-auto pb-1">
+    <div className="bg-white p-6 pt-0 rounded-lg shadow-md border border-gray-200 h-full overflow-y-auto">
+      <div className="sticky top-0 z-10 bg-white flex items-center justify-between gap-2 mb-4 py-3 border-b border-gray-200 overflow-x-auto">
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={onNew}
-            className="h-[34px] px-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            onClick={() => onNew()}
+            className="h-[38px] px-3 text-sm font-bold text-white bg-amber-700 hover:bg-amber-800 rounded shadow transition-colors flex items-center gap-1.5 whitespace-nowrap"
             title={t('cardForm.btnNewTitle')}
           >
             <span>➕</span> {t('cardForm.new')}
@@ -369,30 +378,24 @@ const CardForm: React.FC<CardFormProps> = ({
             >
               <span className="text-base leading-none">🗑️</span>
             </button>
+            <span
+              className={`text-xs whitespace-nowrap ${hasUnsavedChanges ? 'text-amber-700' : 'text-green-700'}`}
+            >
+              {isSaving
+                ? t('cardForm.statusSaving')
+                : hasUnsavedChanges
+                  ? t('cardForm.statusUnsaved')
+                  : isStored
+                    ? t('cardForm.statusSaved')
+                    : t('cardForm.statusEmpty')}
+            </span>
             <button
               onClick={() => onSave()}
-              disabled={isSaving || !hasUnsavedChanges}
-              className={`h-[34px] px-3 text-sm font-bold rounded shadow transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                hasUnsavedChanges
-                  ? 'text-white bg-green-600 hover:bg-green-700 cursor-pointer'
-                  : 'text-green-800 bg-green-100 cursor-not-allowed opacity-75'
-              } ${isSaving ? 'opacity-50' : ''}`}
-              title={hasUnsavedChanges ? t('cardForm.btnSaveTitle') : t('cardForm.btnSavedTitle')}
+              disabled={isSaving}
+              className={`h-[38px] px-4 text-sm font-bold rounded shadow transition-all flex items-center gap-1.5 whitespace-nowrap text-white bg-green-700 hover:bg-green-800 ${isSaving ? 'opacity-50' : ''}`}
+              title={t('cardForm.btnSaveTitle')}
             >
-              {isSaving ? (
-                <>
-                  <span className="animate-spin text-xs">⏳</span>
-                  ...
-                </>
-              ) : hasUnsavedChanges ? (
-                <>
-                  <span>💾</span> {t('cardForm.save')}
-                </>
-              ) : (
-                <>
-                  <span>✓</span> {t('cardForm.saved')}
-                </>
-              )}
+              <span>💾</span> {t('cardForm.save')}
             </button>
           </div>
         )}
@@ -948,7 +951,35 @@ const CardForm: React.FC<CardFormProps> = ({
               {t('cardForm.textIndent')}
             </label>
           </div>
+          {/* Schriftgröße für Einschränkungen, Beschreibung und Schlimme Dinge */}
+          <div className="flex items-center gap-3 mt-2 text-sm">
+            <label htmlFor="bodyFontSize" className="text-gray-700 whitespace-nowrap">
+              {t('cardForm.fontSize')}
+            </label>
+            <input
+              id="bodyFontSize"
+              type="range"
+              min={MIN_FONT_SIZE}
+              max={MAX_FONT_SIZE}
+              step={1}
+              value={clampFontSize(cardData.bodyFontSize)}
+              onChange={(e) => onChange({ ...cardData, bodyFontSize: Number(e.target.value) })}
+              className="flex-grow accent-amber-700"
+            />
+            <span className="w-12 text-right tabular-nums text-gray-700">
+              {Math.round((clampFontSize(cardData.bodyFontSize) / DEFAULT_FONT_SIZE) * 100)} %
+            </span>
+            <button
+              type="button"
+              onClick={() => onChange({ ...cardData, bodyFontSize: undefined })}
+              disabled={clampFontSize(cardData.bodyFontSize) === DEFAULT_FONT_SIZE}
+              className="px-2 py-0.5 text-xs border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+            >
+              {t('cardForm.fontSizeReset')}
+            </button>
+          </div>
           <p className="text-[11px] text-gray-500 mt-1">{t('cardForm.textFormatHint')}</p>
+          <p className="text-[11px] text-gray-500 mt-1">{t('cardForm.quotesHint')}</p>
         </div>
 
         {cardData.type === CardType.MONSTER && (

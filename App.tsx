@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CardForm from './components/CardForm';
 import CardPreview from './components/CardPreview';
 import CardGallery from './components/CardGallery';
@@ -7,7 +7,13 @@ import ImportModal from './components/ImportModal';
 import LegalModal from './components/LegalModal';
 import Footer from './components/Footer';
 import CardNavigation from './components/CardNavigation';
-import { CardData, INITIAL_CARD_DATA, GlobalSettings, DEFAULT_GLOBAL_SETTINGS } from './types';
+import {
+  CardData,
+  CardType,
+  INITIAL_CARD_DATA,
+  GlobalSettings,
+  DEFAULT_GLOBAL_SETTINGS,
+} from './types';
 import {
   CARD_STORE_URL,
   saveCardToServer,
@@ -187,6 +193,11 @@ const App: React.FC = () => {
   };
 
   const [cardData, setCardData] = useState<CardData>(initCard);
+  // Stand einer frisch angelegten (noch nie gespeicherten) Karte: erst speichern, wenn davon abgewichen wird
+  const freshCardRef = useRef<{ id: string; snapshot: string }>({
+    id: initCard.id,
+    snapshot: comparableCard(initCard),
+  });
   const [savedCards, setSavedCards] = useState<CardData[]>([]);
   // Speicher: eigener Server (/api). scriptUrl bleibt als "verbunden"-Kennzeichen erhalten.
   const [scriptUrl, setScriptUrl] = useState<string>(CARD_STORE_URL);
@@ -209,7 +220,7 @@ const App: React.FC = () => {
   const { showNotification } = useNotification();
 
   // State for deck target total (lifted from DeckStats)
-  const [targetTotal, setTargetTotal] = useState<number>(350);
+  const [, setTargetTotal] = useState<number>(350);
 
   // Charger les préférences depuis localStorage
   useEffect(() => {
@@ -412,7 +423,7 @@ const App: React.FC = () => {
     } catch (e: unknown) {
       console.error('[SAVE] Save error:', e);
       showNotification(
-        'Erreur lors de la sauvegarde : ' + (e instanceof Error ? e.message : String(e)),
+        t('notifications.saveError') + ' ' + (e instanceof Error ? e.message : String(e)),
         'error',
       );
     } finally {
@@ -439,11 +450,30 @@ const App: React.FC = () => {
       showNotification(t('notifications.cardDeleted'), 'success');
     } catch (e: unknown) {
       showNotification(
-        'Erreur lors de la suppression : ' + (e instanceof Error ? e.message : String(e)),
+        t('notifications.deleteError') + ' ' + (e instanceof Error ? e.message : String(e)),
         'error',
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  /** Löschen aus der Galerie (Rückfrage passiert direkt auf der Karte). */
+  const handleDeleteCardFromGallery = async (card: CardData) => {
+    try {
+      await deleteCardFromServer(scriptUrl, card.id);
+      setSavedCards((prev) => prev.filter((c) => c.id !== card.id));
+      // Liegt die Karte gerade im Editor, dort durch eine leere ersetzen (sonst speichert Autosave sie neu)
+      if (cardData.id === card.id) {
+        handleNewCard();
+        setActiveView('gallery');
+      }
+      showNotification(t('notifications.cardDeleted'), 'success');
+    } catch (e: unknown) {
+      showNotification(
+        t('notifications.deleteError') + ' ' + (e instanceof Error ? e.message : String(e)),
+        'error',
+      );
     }
   };
 
@@ -452,7 +482,9 @@ const App: React.FC = () => {
     const duplicatedCard = {
       ...cardData,
       id: newId,
-      title: cardData.title ? `${cardData.title} (Copie)` : 'Copie',
+      title: cardData.title
+        ? `${cardData.title} (${t('cardForm.copySuffix')})`
+        : t('cardForm.copySuffix'),
       imageData: null, // On ne duplique pas l'image
       storedImageUrl: undefined, // On ne duplique pas l'image stockée
     };
@@ -463,13 +495,27 @@ const App: React.FC = () => {
   };
 
   const handleNewCard = (initialData?: Partial<CardData>) => {
-    const baseCard = {
+    // Neue Karte = leere Karte (Gegenstand); gespeichert wird erst, wenn etwas eingetragen ist
+    const baseCard: CardData = {
       ...INITIAL_CARD_DATA,
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      title: '',
+      type: CardType.ITEM,
+      level: '',
+      bonus: '',
+      description: '',
+      badStuff: '',
+      restrictions: '',
+      gold: '',
+      imagePrompt: '',
       imagePrePrompt: globalSettings.defaultImagePrePrompt, // Use custom pre-prompt
       storedImageUrl: undefined, // Clear demo image for new cards
     };
-    setCardData(initialData ? { ...baseCard, ...initialData } : baseCard);
+    // Schutz: ein versehentlich übergebenes Klick-Ereignis ist keine Kartenvorlage
+    const isEvent = !!initialData && ('nativeEvent' in initialData || 'target' in initialData);
+    const card = initialData && !isEvent ? { ...baseCard, ...initialData } : baseCard;
+    freshCardRef.current = { id: card.id, snapshot: comparableCard(card) };
+    setCardData(card);
     setActiveView('editor'); // Switch to editor when creating new card
     setHasUnsavedChanges(false); // New card has no changes yet
   };
@@ -577,13 +623,11 @@ const App: React.FC = () => {
     // If card doesn't exist in saved cards yet (new card), check if it has any content
     if (!savedVersion) {
       // For new cards, mark as having changes if any field differs from initial state
+      const fresh = freshCardRef.current;
       const hasContent =
-        cardData.title !== INITIAL_CARD_DATA.title ||
-        cardData.description !== INITIAL_CARD_DATA.description ||
-        cardData.imageData !== null ||
-        cardData.storedImageUrl !== INITIAL_CARD_DATA.storedImageUrl ||
-        cardData.imagePrompt !== INITIAL_CARD_DATA.imagePrompt ||
-        cardData.internalComment !== INITIAL_CARD_DATA.internalComment;
+        fresh.id !== cardData.id || // z. B. Duplikat
+        !!cardData.imageData ||
+        comparableCard(cardData) !== fresh.snapshot;
 
       setHasUnsavedChanges(hasContent);
       return;
@@ -996,6 +1040,7 @@ const App: React.FC = () => {
                   isSaving={isSaving}
                   hasScriptUrl={!!scriptUrl}
                   hasUnsavedChanges={hasUnsavedChanges}
+                  isStored={savedCards.some((c) => c.id === cardData.id)}
                   removeBgApiKey={removeBgApiKey}
                   geminiApiKey={geminiApiKey}
                   globalSettings={globalSettings}
@@ -1010,7 +1055,7 @@ const App: React.FC = () => {
             onSelectCard={handleSelectCard}
             onNewCard={handleNewCard}
             isLoading={isLoadingList}
-            targetTotal={targetTotal}
+            onDeleteCard={handleDeleteCardFromGallery}
             selectedCardId={cardData.id}
             globalSettings={globalSettings}
           />

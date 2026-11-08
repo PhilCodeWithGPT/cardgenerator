@@ -116,6 +116,10 @@ export const de: TranslationDictionary = {
     badStuff: 'Schlimme Dinge: ',
   },
   cardGallery: {
+    exportZipButton: 'Bilder (ZIP)',
+    exportZipTitle: 'Alle Karten als PNG-Bilder in einer ZIP-Datei',
+    exportPdfButton: 'PDF',
+    exportPdfTitle: 'Alle Karten als PDF, eine Karte pro Seite',
     searchPlaceholder: 'Karte suchen …',
     filtersAndOptions: 'Filter & Optionen',
     newCard: 'Neue Karte',
@@ -174,6 +178,10 @@ export const de: TranslationDictionary = {
     targetTitle: 'Ziel',
   },
   cardThumbnail: {
+    edit: 'Bearbeiten',
+    delete: 'Löschen',
+    cancel: 'Abbrechen',
+    confirmDelete: 'Karte wirklich löschen?',
     validated: 'Freigegeben',
     untitled: 'Ohne Titel',
   },
@@ -252,6 +260,15 @@ export const de: TranslationDictionary = {
     treasurePlural: '{count} Schätze',
   },
   cardForm: {
+    statusEmpty: 'neu – wird beim ersten Eintrag gespeichert',
+    fontSize: 'Schriftgröße',
+    fontSizeReset: 'Standard',
+    quotesHint:
+      'Anführungszeichen wie auf den Karten: >> wird zu », << wird zu « (oder direkt tippen: Alt+0187 / Alt+0171).',
+    statusSaved: '✓ gespeichert',
+    statusUnsaved: '● nicht gespeichert',
+    statusSaving: 'speichert …',
+    copySuffix: 'Kopie',
     align: {
       left: 'Links',
       right: 'Rechts',
@@ -265,7 +282,7 @@ export const de: TranslationDictionary = {
       'Zeilenumbrüche, Leerzeilen und Leerzeichen werden genau so übernommen – so kannst du den Text um ein Bild herum formen (Bild dann mit Position Y nach oben schieben).',
     flipImage: 'Bild spiegeln',
     imageSection: 'Bild',
-    new: 'Neu',
+    new: 'Neue Karte',
     duplicate: 'Duplizieren',
     import: 'Import',
     save: 'Speichern',
@@ -522,6 +539,8 @@ export const de: TranslationDictionary = {
     },
   },
   notifications: {
+    saveError: 'Fehler beim Speichern:',
+    deleteError: 'Fehler beim Löschen:',
     loadError: 'Karten konnten nicht geladen werden: {message}',
     settingsSaved: 'Einstellungen gespeichert!',
     cardSaved: 'Karte erfolgreich gespeichert!',
