@@ -9,7 +9,7 @@ import {
 } from '../../utils/printLayout';
 
 describe('computePrintLayout', () => {
-  it('places 3 x 3 cards of 56 x 88 mm with 4 mm gap, centred on A4', () => {
+  it('places 3 x 3 cards of 56 x 87 mm with 4 mm gap, centred on A4', () => {
     const l = computePrintLayout(DEFAULT_PRINT_SETTINGS);
     expect(l.cols).toBe(3);
     expect(l.rows).toBe(3);
@@ -18,10 +18,10 @@ describe('computePrintLayout', () => {
     const last = l.slots[8];
     // linker Rand = rechter Rand, oberer = unterer
     expect(first.x).toBeCloseTo(PAGE_W - (last.x + 56), 6);
-    expect(first.y).toBeCloseTo(PAGE_H - (last.y + 88), 6);
+    expect(first.y).toBeCloseTo(PAGE_H - (last.y + 87), 6);
     // Abstand zwischen Nachbarn = Karte + Lücke
     expect(l.slots[1].x - l.slots[0].x).toBeCloseTo(60, 6);
-    expect(l.slots[3].y - l.slots[0].y).toBeCloseTo(92, 6);
+    expect(l.slots[3].y - l.slots[0].y).toBeCloseTo(91, 6);
   });
 
   it('keeps every card on the page for poker-size cards', () => {
@@ -46,7 +46,7 @@ describe('computePrintLayout', () => {
     const s = normalizePrintSettings({ cardWidthMm: NaN, gapMm: -5 });
     expect(s.cardWidthMm).toBe(56);
     expect(s.gapMm).toBe(0);
-    expect(s.cardHeightMm).toBe(88);
+    expect(s.cardHeightMm).toBe(87);
   });
 });
 

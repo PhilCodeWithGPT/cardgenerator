@@ -16,7 +16,7 @@ export interface PrintSettings {
 
 export const DEFAULT_PRINT_SETTINGS: PrintSettings = {
   cardWidthMm: 56,
-  cardHeightMm: 88,
+  cardHeightMm: 87,
   gapMm: 4,
   cornerRadiusMm: 3,
   offsetXMm: 0,
