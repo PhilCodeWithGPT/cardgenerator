@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { GlobalSettings, AVAILABLE_FONTS, INITIAL_CARD_DATA, CardData, CardType } from '../types';
 import { useNotification } from './NotificationContext';
 import CardPreview from './CardPreview';
+import { AI_ENABLED } from '../utils/features';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface GlobalSettingsProps {
@@ -516,35 +517,37 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
           </section>
 
           {/* 4. Global Prompt */}
-          <section className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
-            <div className="bg-stone-50 px-6 py-4 border-b border-stone-200 flex items-center gap-3">
-              <span className="text-2xl">✏️</span>
-              <div>
-                <h3 className="font-bold text-stone-800">{t('globalSettings.defaultPrompt')}</h3>
-                <p className="text-xs text-stone-500">{t('globalSettings.defaultPromptDesc')}</p>
+          {AI_ENABLED && (
+            <section className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+              <div className="bg-stone-50 px-6 py-4 border-b border-stone-200 flex items-center gap-3">
+                <span className="text-2xl">✏️</span>
+                <div>
+                  <h3 className="font-bold text-stone-800">{t('globalSettings.defaultPrompt')}</h3>
+                  <p className="text-xs text-stone-500">{t('globalSettings.defaultPromptDesc')}</p>
+                </div>
               </div>
-            </div>
-            <div className="p-6 space-y-4">
-              <textarea
-                value={settings.defaultImagePrePrompt}
-                onChange={(e) => onChange({ ...settings, defaultImagePrePrompt: e.target.value })}
-                className="w-full h-24 p-3 text-sm rounded-lg border border-stone-200 outline-none resize-none"
-                placeholder={t('globalSettings.promptPlaceholder')}
-              />
-              <button
-                onClick={() => {
-                  onChange({
-                    ...settings,
-                    defaultImagePrePrompt: INITIAL_CARD_DATA.imagePrePrompt,
-                  });
-                  showNotification(t('globalSettings.promptReset'), 'info');
-                }}
-                className="text-xs text-stone-500 underline flex ml-auto"
-              >
-                {t('globalSettings.reset')}
-              </button>
-            </div>
-          </section>
+              <div className="p-6 space-y-4">
+                <textarea
+                  value={settings.defaultImagePrePrompt}
+                  onChange={(e) => onChange({ ...settings, defaultImagePrePrompt: e.target.value })}
+                  className="w-full h-24 p-3 text-sm rounded-lg border border-stone-200 outline-none resize-none"
+                  placeholder={t('globalSettings.promptPlaceholder')}
+                />
+                <button
+                  onClick={() => {
+                    onChange({
+                      ...settings,
+                      defaultImagePrePrompt: INITIAL_CARD_DATA.imagePrePrompt,
+                    });
+                    showNotification(t('globalSettings.promptReset'), 'info');
+                  }}
+                  className="text-xs text-stone-500 underline flex ml-auto"
+                >
+                  {t('globalSettings.reset')}
+                </button>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* PREVIEW COLUMN (STICKY) */}

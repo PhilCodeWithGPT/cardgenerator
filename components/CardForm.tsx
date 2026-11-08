@@ -14,6 +14,7 @@ import {
 } from '../utils/balancingConfig';
 import { useTranslation } from '../i18n/LanguageContext';
 import { translateItemSlotFor } from '../utils/cardLabels';
+import { AI_ENABLED } from '../utils/features';
 
 interface CardFormProps {
   cardData: CardData;
@@ -34,6 +35,9 @@ interface CardFormProps {
 
 // Pre-prompt kept for reference but configured via globalSettings
 // const FIXED_PRE_PROMPT = ...;
+
+// Pseudo-Eintrag im Kartentyp-Menü: "Ross" = Gegenstand mit Slot Ross
+const STEED_OPTION = '__steed';
 
 const CardForm: React.FC<CardFormProps> = ({
   cardData,
@@ -177,8 +181,7 @@ const CardForm: React.FC<CardFormProps> = ({
     } catch (err: unknown) {
       console.error('[BG REMOVAL] Error:', err);
       setError(
-        (err instanceof Error ? err.message : String(err)) ||
-          t('notifications.removeBgError'),
+        (err instanceof Error ? err.message : String(err)) || t('notifications.removeBgError'),
       );
     } finally {
       setIsRemovingBg(false);
@@ -384,33 +387,37 @@ const CardForm: React.FC<CardFormProps> = ({
 
       <div className="space-y-4">
         {/* Assistant Creation (Gemini) */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200 shadow-sm">
-          <label className="block text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
-            <span>✨ {t('cardForm.assistantTitle')}</span>
-            <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-              Gemini 2.0 Flash
-            </span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={suggestionInput}
-              onChange={(e) => setSuggestionInput(e.target.value)}
-              placeholder={t('cardForm.assistantConcept')}
-              className="flex-grow p-2 text-sm border border-amber-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
-              onKeyDown={(e) => e.key === 'Enter' && handleSuggestCard()}
-            />
-            <button
-              onClick={handleSuggestCard}
-              disabled={isSuggesting}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm text-sm"
-              title={suggestionInput ? t('cardForm.assistantBtn') : t('cardForm.assistantBtn')}
-            >
-              {isSuggesting ? t('cardForm.assistantThinking') : t('cardForm.assistantBtn')}
-            </button>
+        {AI_ENABLED && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-lg border border-amber-200 shadow-sm">
+            <label className="block text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+              <span>✨ {t('cardForm.assistantTitle')}</span>
+              <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                Gemini 2.0 Flash
+              </span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={suggestionInput}
+                onChange={(e) => setSuggestionInput(e.target.value)}
+                placeholder={t('cardForm.assistantConcept')}
+                className="flex-grow p-2 text-sm border border-amber-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                onKeyDown={(e) => e.key === 'Enter' && handleSuggestCard()}
+              />
+              <button
+                onClick={handleSuggestCard}
+                disabled={isSuggesting}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm text-sm"
+                title={suggestionInput ? t('cardForm.assistantBtn') : t('cardForm.assistantBtn')}
+              >
+                {isSuggesting ? t('cardForm.assistantThinking') : t('cardForm.assistantBtn')}
+              </button>
+            </div>
+            <p className="text-[10px] text-amber-700/70 mt-1 italic">
+              {t('cardForm.assistantDesc')}
+            </p>
           </div>
-          <p className="text-[10px] text-amber-700/70 mt-1 italic">{t('cardForm.assistantDesc')}</p>
-        </div>
+        )}
 
         {/* Basic Info */}
         <div className="grid grid-cols-2 gap-4">
@@ -419,8 +426,23 @@ const CardForm: React.FC<CardFormProps> = ({
               {t('cardForm.cardType')}
             </label>
             <select
-              value={cardData.type}
+              value={
+                cardData.type === CardType.ITEM && cardData.itemSlot === 'Monture'
+                  ? STEED_OPTION
+                  : cardData.type
+              }
               onChange={(e) => {
+                if (e.target.value === STEED_OPTION) {
+                  // "Ross" = Gegenstand mit Slot Ross, standardmäßig groß
+                  onChange({
+                    ...cardData,
+                    type: CardType.ITEM,
+                    itemSlot: 'Monture',
+                    isBig: true,
+                    level: '',
+                  });
+                  return;
+                }
                 const newType = e.target.value as CardType;
                 onChange({
                   ...cardData,
@@ -444,9 +466,12 @@ const CardForm: React.FC<CardFormProps> = ({
               className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             >
               {Object.values(CardType).map((type) => (
-                <option key={type} value={type}>
-                  {getCardTypeLabel(type)}
-                </option>
+                <React.Fragment key={type}>
+                  <option value={type}>{getCardTypeLabel(type)}</option>
+                  {type === CardType.ITEM && (
+                    <option value={STEED_OPTION}>{t('cardTypes.steed')}</option>
+                  )}
+                </React.Fragment>
               ))}
             </select>
           </div>
@@ -734,27 +759,31 @@ const CardForm: React.FC<CardFormProps> = ({
         {/* Image Generation Section */}
         <div className="border-t border-b border-gray-200 py-4 my-4 bg-gray-50 -mx-6 px-6">
           <label className="block text-sm font-bold text-gray-800 mb-2">
-            {t('cardForm.artGenerator')}
+            {AI_ENABLED ? t('cardForm.artGenerator') : t('cardForm.imageSection')}
           </label>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={cardData.imagePrompt || ''}
-              onChange={(e) => handleChange('imagePrompt', e.target.value)}
-              placeholder={t('cardForm.imagePromptPlaceholder')}
-              className="flex-grow p-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            />
-            <button
-              onClick={handleGenerateImage}
-              disabled={isGenerating}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
-            >
-              {isGenerating ? t('cardForm.generatingBtn') : t('cardForm.generateBtn')}
-            </button>
-          </div>
+          {AI_ENABLED && (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={cardData.imagePrompt || ''}
+                onChange={(e) => handleChange('imagePrompt', e.target.value)}
+                placeholder={t('cardForm.imagePromptPlaceholder')}
+                className="flex-grow p-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+              <button
+                onClick={handleGenerateImage}
+                disabled={isGenerating}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
+              >
+                {isGenerating ? t('cardForm.generatingBtn') : t('cardForm.generateBtn')}
+              </button>
+            </div>
+          )}
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          <p className="text-[10px] text-gray-500 mt-2 italic">{t('cardForm.artStyleHint')}</p>
+          {AI_ENABLED && (
+            <p className="text-[10px] text-gray-500 mt-2 italic">{t('cardForm.artStyleHint')}</p>
+          )}
 
           <div className="mt-3">
             <input
@@ -775,7 +804,7 @@ const CardForm: React.FC<CardFormProps> = ({
           </div>
 
           {/* Background Removal Button - Show if image exists */}
-          {(cardData.imageData || cardData.storedImageUrl) && (
+          {AI_ENABLED && (cardData.imageData || cardData.storedImageUrl) && (
             <div className="mt-3 pt-3 border-t border-gray-200">
               <button
                 onClick={handleRemoveBackground}

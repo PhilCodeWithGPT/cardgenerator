@@ -1,6 +1,6 @@
 export const fr = {
   app: {
-    title: 'Niveau10',
+    title: 'Mattis Munchkin Editor',
     subtitle:
       'Complétez votre jeu Munchkin avec vos propres cartes, ou construisez votre deck entièrement !',
     configDb: 'Configuration Base de Données',
@@ -152,6 +152,7 @@ export const fr = {
     nextTitle: 'Carte suivante : {title}',
   },
   cardTypes: {
+    steed: 'Monture',
     monster: 'Monstre',
     curse: 'Malédiction',
     item: 'Objet',
@@ -208,6 +209,7 @@ export const fr = {
     treasurePlural: '{count} trésors',
   },
   cardForm: {
+    imageSection: 'Image',
     new: 'Nouvelle',
     duplicate: 'Dupliquer',
     import: 'Import',

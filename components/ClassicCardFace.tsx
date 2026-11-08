@@ -333,7 +333,6 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
                   lineHeight: 1.28,
                   hyphens: 'auto',
                   paddingTop: '6px',
-                  textIndent: '0.6em',
                 }}
               >
                 <span style={{ fontWeight: 700 }}>{labels.badStuff}</span>

@@ -2,7 +2,7 @@ import { TranslationDictionary } from './fr';
 
 export const en: TranslationDictionary = {
   app: {
-    title: 'Niveau10',
+    title: 'Mattis Munchkin Editor',
     subtitle:
       'Complete your Munchkin game with your own cards, or build your entire deck from scratch!',
     configDb: 'Database Configuration',
@@ -152,6 +152,7 @@ export const en: TranslationDictionary = {
     nextTitle: 'Next card: {title}',
   },
   cardTypes: {
+    steed: 'Steed',
     monster: 'Monster',
     curse: 'Curse',
     item: 'Item',
@@ -208,6 +209,7 @@ export const en: TranslationDictionary = {
     treasurePlural: '{count} treasures',
   },
   cardForm: {
+    imageSection: 'Image',
     new: 'New',
     duplicate: 'Duplicate',
     import: 'Import',

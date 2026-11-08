@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CardForm from './components/CardForm';
 import CardPreview from './components/CardPreview';
-import DeckStats from './components/DeckStats';
 import CardGallery from './components/CardGallery';
 import CardList from './components/CardList';
 import GlobalSettingsComponent from './components/GlobalSettings';
@@ -13,6 +12,7 @@ import { CardData, INITIAL_CARD_DATA, GlobalSettings, DEFAULT_GLOBAL_SETTINGS } 
 import { saveCardToSheet, fetchCardsFromSheet, deleteCardFromSheet } from './services/sheetService';
 import { useNotification } from './components/NotificationContext';
 import { useTranslation } from './i18n/LanguageContext';
+import { AI_ENABLED } from './utils/features';
 
 const GOOGLE_SCRIPT_TEMPLATE = `// CODE À COPIER DANS VOTRE GOOGLE APPS SCRIPT (fichier Code.gs)
 
@@ -274,11 +274,6 @@ const App: React.FC = () => {
   const handleResetGlobalSettings = () => {
     setGlobalSettings(DEFAULT_GLOBAL_SETTINGS);
     localStorage.removeItem('global_settings');
-  };
-
-  const handleTargetTotalChange = (newTarget: number) => {
-    setTargetTotal(newTarget);
-    localStorage.setItem('deckstats_target_total', String(newTarget));
   };
 
   const loadSavedCards = async (url: string) => {
@@ -718,7 +713,6 @@ const App: React.FC = () => {
               <div className="text-3xl">🗡️</div>
               <div>
                 <h1 className="text-xl font-bold tracking-wider">{t('app.title')}</h1>
-                <p className="text-xs text-amber-200 opacity-80">{t('app.subtitle')}</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -872,68 +866,70 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="bg-stone-900/30 p-4 rounded-lg border border-stone-800 space-y-4">
-                    <div className="border-b border-stone-700 pb-2">
-                      <h4 className="text-amber-400 font-bold text-sm">
-                        {t('configModal.aiTitle')}
-                      </h4>
-                      <p className="text-xs text-stone-400 mt-1">{t('configModal.aiDesc')}</p>
-                    </div>
+                  {AI_ENABLED && (
+                    <div className="bg-stone-900/30 p-4 rounded-lg border border-stone-800 space-y-4">
+                      <div className="border-b border-stone-700 pb-2">
+                        <h4 className="text-amber-400 font-bold text-sm">
+                          {t('configModal.aiTitle')}
+                        </h4>
+                        <p className="text-xs text-stone-400 mt-1">{t('configModal.aiDesc')}</p>
+                      </div>
 
-                    <div>
-                      <label className="block text-sm mb-2 text-amber-100 font-bold">
-                        {t('configModal.removeBgLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        value={removeBgApiKey}
-                        onChange={(e) => {
-                          const newVal = e.target.value;
-                          setRemoveBgApiKey(newVal);
-                          localStorage.setItem('removebg_api_key', newVal);
-                        }}
-                        placeholder={t('configModal.removeBgPlaceholder')}
-                        className="w-full p-3 rounded bg-stone-950 border border-stone-600 text-amber-100 text-sm font-mono focus:border-amber-500 outline-none placeholder-stone-600"
-                      />
-                      <p className="text-xs text-stone-500 mt-1">
-                        {t('configModal.removeBgHint')}{' '}
-                        <a
-                          href="https://www.remove.bg/api"
-                          target="_blank"
-                          className="underline hover:text-amber-200"
-                        >
-                          remove.bg/api
-                        </a>
-                      </p>
-                    </div>
+                      <div>
+                        <label className="block text-sm mb-2 text-amber-100 font-bold">
+                          {t('configModal.removeBgLabel')}
+                        </label>
+                        <input
+                          type="text"
+                          value={removeBgApiKey}
+                          onChange={(e) => {
+                            const newVal = e.target.value;
+                            setRemoveBgApiKey(newVal);
+                            localStorage.setItem('removebg_api_key', newVal);
+                          }}
+                          placeholder={t('configModal.removeBgPlaceholder')}
+                          className="w-full p-3 rounded bg-stone-950 border border-stone-600 text-amber-100 text-sm font-mono focus:border-amber-500 outline-none placeholder-stone-600"
+                        />
+                        <p className="text-xs text-stone-500 mt-1">
+                          {t('configModal.removeBgHint')}{' '}
+                          <a
+                            href="https://www.remove.bg/api"
+                            target="_blank"
+                            className="underline hover:text-amber-200"
+                          >
+                            remove.bg/api
+                          </a>
+                        </p>
+                      </div>
 
-                    <div>
-                      <label className="block text-sm mb-2 text-amber-100 font-bold">
-                        {t('configModal.geminiLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        value={geminiApiKey}
-                        onChange={(e) => {
-                          const newVal = e.target.value;
-                          setGeminiApiKey(newVal);
-                          localStorage.setItem('gemini_api_key', newVal);
-                        }}
-                        placeholder={t('configModal.geminiPlaceholder')}
-                        className="w-full p-3 rounded bg-stone-950 border border-stone-600 text-amber-100 text-sm font-mono focus:border-amber-500 outline-none placeholder-stone-600"
-                      />
-                      <p className="text-xs text-stone-500 mt-1">
-                        {t('configModal.geminiHint')}{' '}
-                        <a
-                          href="https://aistudio.google.com/app/apikey"
-                          target="_blank"
-                          className="underline hover:text-amber-200"
-                        >
-                          aistudio.google.com
-                        </a>
-                      </p>
+                      <div>
+                        <label className="block text-sm mb-2 text-amber-100 font-bold">
+                          {t('configModal.geminiLabel')}
+                        </label>
+                        <input
+                          type="text"
+                          value={geminiApiKey}
+                          onChange={(e) => {
+                            const newVal = e.target.value;
+                            setGeminiApiKey(newVal);
+                            localStorage.setItem('gemini_api_key', newVal);
+                          }}
+                          placeholder={t('configModal.geminiPlaceholder')}
+                          className="w-full p-3 rounded bg-stone-950 border border-stone-600 text-amber-100 text-sm font-mono focus:border-amber-500 outline-none placeholder-stone-600"
+                        />
+                        <p className="text-xs text-stone-500 mt-1">
+                          {t('configModal.geminiHint')}{' '}
+                          <a
+                            href="https://aistudio.google.com/app/apikey"
+                            target="_blank"
+                            className="underline hover:text-amber-200"
+                          >
+                            aistudio.google.com
+                          </a>
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex justify-end pt-2">
                     <button
@@ -1006,19 +1002,8 @@ const App: React.FC = () => {
           /* Editor View */
           <div className="max-w-[1600px] mx-auto p-4 md:p-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left: Stats & Saved Cards (3 cols) */}
-              <div className="lg:col-span-3 order-3 lg:order-1">
-                <div className="bg-amber-100 rounded-lg shadow border border-amber-200 overflow-hidden sticky top-32 h-[calc(100vh-160px)]">
-                  <DeckStats
-                    cards={savedCards}
-                    targetTotal={targetTotal}
-                    onTargetTotalChange={handleTargetTotalChange}
-                  />
-                </div>
-              </div>
-
-              {/* Center: Preview (4 cols) */}
-              <div className="lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-32">
+              {/* Left: Preview (5 cols) */}
+              <div className="lg:col-span-5 order-1 lg:sticky lg:top-32">
                 <div className="bg-white rounded-lg shadow-xl overflow-hidden border-2 border-amber-900/10">
                   <div className="bg-gray-50 border-b p-2 text-center text-xs text-gray-500 font-mono uppercase">
                     {t('configModal.previewTitle')}
@@ -1036,8 +1021,8 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right: Editor (5 cols) */}
-              <div className="lg:col-span-5 order-2 lg:order-3">
+              {/* Right: Editor (7 cols) */}
+              <div className="lg:col-span-7 order-2">
                 {/* Card Navigation - only show if there are saved cards */}
                 {savedCards.length > 0 && (
                   <div className="mb-4">
