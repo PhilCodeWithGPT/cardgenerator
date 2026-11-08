@@ -170,6 +170,8 @@ Regeln:
 - Anführungszeichen immer als Guillemets wie auf deutschen Karten: »Text« (Spitzen zeigen nach innen), innen ›Text‹.
   Auch "Text", „Text“ und >>Text<< so umwandeln.
 - Gedankenstrich als – mit Leerzeichen davor und danach.
+- Achte besonders auf echte Wörter, die im Satz falsch sind (typisch bei LRS), z. B. spukt/spuckt, wen/wenn,
+  das/dass, seid/seit, Weise/Waise, viel/fiel, war/wahr, ihm/im.
 - Erfundene Namen und absichtliche Wortspiele nicht „verbessern“, nur offensichtliche Tippfehler darin.
 - Ist ein Feld leer, bleibt es leer.
 - Für jede Änderung eine Erklärung in einfacher, freundlicher Sprache für ein Kind (höchstens 12 Wörter),
