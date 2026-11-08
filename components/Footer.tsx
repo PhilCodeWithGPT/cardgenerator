@@ -49,6 +49,13 @@ const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
             >
               EN
             </button>
+            <span>|</span>
+            <button
+              onClick={() => setLanguage('de')}
+              className={`transition-colors font-bold ${language === 'de' ? 'text-amber-800' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              DE
+            </button>
           </div>
         </div>
       </div>

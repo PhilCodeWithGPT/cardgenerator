@@ -1,6 +1,6 @@
 # 🎴 Munchkin Card Generator
 
-> 🌐 [Lire en français](README.fr.md)
+> 🌐 [Lire en français](README.fr.md) · [Auf Deutsch lesen](README.de.md)
 
 **Create custom Munchkin cards with AI-generated artwork.** Design, edit, and export your own cards for the beloved board game.
 

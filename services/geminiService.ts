@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { CardData, CardType } from '../types';
+import { CardData, CardLanguage, CardType } from '../types';
 
 // Cache pour l'instance par défaut (celle avec la clé d'environnement)
 let defaultAiInstance: GoogleGenAI | null = null;
@@ -90,15 +90,23 @@ export const generateCardArt = async (prompt: string, apiKey?: string): Promise<
   }
 };
 
+const OUTPUT_LANGUAGE_NAMES: Record<CardLanguage, string> = {
+  fr: 'français',
+  en: 'anglais',
+  de: 'allemand',
+};
+
 /**
  * Generates card data content based on a concept or randomly using gemini-2.0-flash.
  * @param concept User input concept or empty for random.
  * @param apiKey Optional user-provided API key.
+ * @param language Card language used for all generated texts.
  * @returns Partial CardData object.
  */
 export const generateCardSuggestion = async (
   concept: string,
   apiKey?: string,
+  language: CardLanguage = 'fr',
 ): Promise<Partial<CardData>> => {
   try {
     const ai = getAiInstance(apiKey);
@@ -143,6 +151,11 @@ export const generateCardSuggestion = async (
       IMPORTANT: Écris toujours les trésors au format "X trésors" (ou "1 trésor" au singulier).
       IMPORTANT: Varie les niveaux des monstres (ne donne pas toujours la même valeur).
       IMPORTANT: Ne génère JAMAIS de champ "id" ou "uuid". L'identifiant est géré par le système.
+      ${
+        language !== 'fr'
+          ? `LANGUE DE SORTIE (PRIORITAIRE): Rédige TOUS les textes ("title", "bonus", "description", "badStuff", "gold", "restrictions", "imagePrompt") en ${OUTPUT_LANGUAGE_NAMES[language]}, avec le vocabulaire officiel de Munchkin dans cette langue. Pour "gold", indique uniquement le nombre (ex: "2"). Les valeurs de "type" et "itemSlot" restent EXACTEMENT les valeurs françaises listées ci-dessus.`
+          : ''
+      }
       Réponds uniquement avec le JSON.
     `;
 

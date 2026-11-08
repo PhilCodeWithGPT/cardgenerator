@@ -13,6 +13,7 @@ import {
   validateMonsterBalance,
 } from '../utils/balancingConfig';
 import { useTranslation } from '../i18n/LanguageContext';
+import { translateItemSlotFor } from '../utils/cardLabels';
 
 interface CardFormProps {
   cardData: CardData;
@@ -67,12 +68,12 @@ const CardForm: React.FC<CardFormProps> = ({
   const translateItemSlot = (slot: string) => {
     if (!slot) return t('cardGallery.slotOneShot');
     const map: Record<string, string> = {
-      '1 Main': language === 'en' ? '1 Hand' : '1 Main',
-      '2 Mains': language === 'en' ? '2 Hands' : '2 Mains',
-      'Couvre-chef': language === 'en' ? 'Headgear' : 'Couvre-chef',
-      Chaussures: language === 'en' ? 'Footgear' : 'Chaussures',
-      Armure: language === 'en' ? 'Armor' : 'Armure',
-      Monture: language === 'en' ? 'Steed' : 'Monture',
+      '1 Main': translateItemSlotFor('1 Main', language),
+      '2 Mains': translateItemSlotFor('2 Mains', language),
+      'Couvre-chef': translateItemSlotFor('Couvre-chef', language),
+      Chaussures: translateItemSlotFor('Chaussures', language),
+      Armure: translateItemSlotFor('Armure', language),
+      Monture: translateItemSlotFor('Monture', language),
       Amélioration: t('cardGallery.slotEnhancement'),
       'Amélioration de Monture': t('cardGallery.slotSteedEnhancement'),
       NoSlot: t('cardGallery.slotNoSlot'),
@@ -177,7 +178,7 @@ const CardForm: React.FC<CardFormProps> = ({
       console.error('[BG REMOVAL] Error:', err);
       setError(
         (err instanceof Error ? err.message : String(err)) ||
-          "Erreur lors de la suppression de l'arrière-plan.",
+          t('notifications.removeBgError'),
       );
     } finally {
       setIsRemovingBg(false);
@@ -217,7 +218,11 @@ const CardForm: React.FC<CardFormProps> = ({
     setError(null);
     try {
       console.log('[CARD FORM] Requesting suggestion for:', suggestionInput);
-      const suggestion = await generateCardSuggestion(suggestionInput, geminiApiKey);
+      const suggestion = await generateCardSuggestion(
+        suggestionInput,
+        geminiApiKey,
+        globalSettings.language,
+      );
       console.log('[CARD FORM] Received suggestion:', suggestion);
 
       // On s'assure que la suggestion ne contient pas d'ID qui pourrait écraser l'actuel

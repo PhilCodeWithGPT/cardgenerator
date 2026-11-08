@@ -5,6 +5,7 @@ import { getLayoutSource, getExportFilename } from '../utils/layoutUtils';
 import { toPng, getFontEmbedCSS } from 'html-to-image';
 import JSZip from 'jszip';
 import { useNotification } from './NotificationContext';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface BatchExportRendererProps {
   cards: CardData[];
@@ -119,6 +120,9 @@ const BatchExportRenderer: React.FC<BatchExportRendererProps> = ({
   const onCompleteRef = useRef(onComplete);
   const onProgressRef = useRef(onProgress);
   const showNotifRef = useRef(showNotification);
+  const { t } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
   onCompleteRef.current = onComplete;
   onProgressRef.current = onProgress;
   showNotifRef.current = showNotification;
@@ -202,7 +206,13 @@ const BatchExportRenderer: React.FC<BatchExportRendererProps> = ({
                 : `munchkin_cards_partie${chunkIdx + 1}_sur_${totalChunks}.zip`;
             downloadBlob(zipBlob, zipName);
             if (totalChunks > 1) {
-              showNotifRef.current(`📦 Lot ${chunkIdx + 1}/${totalChunks} téléchargé !`, 'success');
+              showNotifRef.current(
+                tRef.current('notifications.batchDownloaded', {
+                  chunk: chunkIdx + 1,
+                  total: totalChunks,
+                }),
+                'success',
+              );
             }
           } catch (e) {
             console.error('[Export] Error generating final ZIP:', e);
@@ -210,13 +220,16 @@ const BatchExportRenderer: React.FC<BatchExportRendererProps> = ({
         } else {
           console.error('[Export] ZIP is EMPTY! No cards were captured.');
           showNotifRef.current(
-            "❌ Erreur : aucune carte n'a pu être capturée. Vérifiez la console.",
+            tRef.current('notifications.exportNoCards'),
             'error',
           );
         }
 
         if (totalChunks > 1) {
-          showNotifRef.current(`✅ Export terminé ! ${totalChunks} fichiers ZIP.`, 'success');
+          showNotifRef.current(
+            tRef.current('notifications.exportDone', { total: totalChunks }),
+            'success',
+          );
         }
         onCompleteRef.current();
         return;
@@ -341,7 +354,13 @@ const BatchExportRenderer: React.FC<BatchExportRendererProps> = ({
                 `[Export] Chunk ${chunkIdx + 1} ZIP generated: ${(zipBlob.size / 1024).toFixed(1)} KB, ${Object.keys(zipRef.current.files).length} files`,
               );
               downloadBlob(zipBlob, `munchkin_cards_partie${chunkIdx + 1}_sur_${totalChunks}.zip`);
-              showNotifRef.current(`📦 Lot ${chunkIdx + 1}/${totalChunks} téléchargé !`, 'success');
+              showNotifRef.current(
+                tRef.current('notifications.batchDownloaded', {
+                  chunk: chunkIdx + 1,
+                  total: totalChunks,
+                }),
+                'success',
+              );
             } catch (e) {
               console.error(`[Export] Error ZIP chunk ${chunkIdx + 1}:`, e);
             }

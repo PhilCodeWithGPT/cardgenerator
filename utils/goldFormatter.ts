@@ -1,4 +1,4 @@
-import { CardType } from '../types';
+import { CardLanguage, CardType } from '../types';
 
 /**
  * Extracts the numeric value from a gold/treasure string
@@ -27,7 +27,7 @@ export function extractGoldValue(goldString: string | undefined): number | null 
 export function formatGoldDisplay(
     cardType: CardType,
     goldValue: string | undefined,
-    language: 'fr' | 'en' = 'fr'
+    language: CardLanguage = 'fr'
 ): string | null {
     // These card types should never display the gold field
     if (
@@ -53,15 +53,22 @@ export function formatGoldDisplay(
         if (language === 'en') {
             return `${numericValue} treasure${numericValue > 1 ? 's' : ''}`;
         }
+        if (language === 'de') {
+            return `${numericValue} ${numericValue > 1 ? 'Schätze' : 'Schatz'}`;
+        }
         return `${numericValue} trésor${numericValue > 1 ? 's' : ''}`;
     }
 
     if (cardType === CardType.ITEM) {
         if (numericValue === 0) {
+            if (language === 'de') return 'Kein Wert';
             return language === 'en' ? 'No value' : 'Aucune valeur';
         }
         if (language === 'en') {
             return `${numericValue} gold piece${numericValue > 1 ? 's' : ''}`;
+        }
+        if (language === 'de') {
+            return `${numericValue} Goldstück${numericValue > 1 ? 'e' : ''}`;
         }
         return `${numericValue} pièce${numericValue > 1 ? 's' : ''} d'or`;
     }

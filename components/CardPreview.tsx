@@ -5,6 +5,7 @@ import ExportCardRenderer from './ExportCardRenderer';
 import { useNotification } from './NotificationContext';
 import { getExportFilename, formatBonus, getLayoutSource } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
+import { translateItemSlotFor } from '../utils/cardLabels';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface CardPreviewProps {
@@ -351,20 +352,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, index, globalSettings }
   };
 
   // --- HELPERS TRADUCTION ---
-  const translateItemSlot = (slot: string) => {
-    if (globalSettings?.language !== 'en') return slot;
-    const map: Record<string, string> = {
-      '1 Main': '1 Hand',
-      '2 Mains': '2 Hands',
-      'Couvre-chef': 'Headgear',
-      Chaussures: 'Footgear',
-      Armure: 'Armor',
-      Monture: 'Steed',
-      Amélioration: 'Enhancement',
-      'Amélioration de Monture': 'Steed Enhancement',
-    };
-    return map[slot] || slot;
-  };
+  const translateItemSlot = (slot: string) =>
+    translateItemSlotFor(slot, globalSettings?.language);
 
   // --- RENDU : TYPE 1 (NOUVEAUX LAYOUTS PNG) ---
   const renderStandardLayout = () => {

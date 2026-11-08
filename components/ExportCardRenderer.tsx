@@ -2,6 +2,7 @@ import React, { forwardRef, useRef, useState, useEffect } from 'react';
 import { CardData, CardType, GlobalSettings } from '../types';
 import { formatBonus } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
+import { CARD_LABELS, translateItemSlotFor } from '../utils/cardLabels';
 
 interface ExportCardRendererProps {
   data: CardData;
@@ -94,20 +95,9 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
     }
 
     // --- HELPERS TRADUCTION ---
-    const translateItemSlot = (slot: string) => {
-      if (globalSettings?.language !== 'en') return slot;
-      const map: Record<string, string> = {
-        '1 Main': '1 Hand',
-        '2 Mains': '2 Hands',
-        'Couvre-chef': 'Headgear',
-        Chaussures: 'Footgear',
-        Armure: 'Armor',
-        Monture: 'Steed',
-        Amélioration: 'Enhancement',
-        'Amélioration de Monture': 'Steed Enhancement',
-      };
-      return map[slot] || slot;
-    };
+    const translateItemSlot = (slot: string) =>
+      translateItemSlotFor(slot, globalSettings?.language);
+    const labels = CARD_LABELS[globalSettings?.language || 'fr'];
 
     return (
       <div
@@ -251,7 +241,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                     style={{ width: '100%' }}
                   >
                     <span className="font-bold">
-                      {globalSettings?.language === 'en' ? 'Bad Stuff: ' : 'Incident Fâcheux : '}
+                      {labels.badStuff}
                     </span>
                     <span className="italic">{data.badStuff}</span>
                   </div>
@@ -297,7 +287,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                   fontFamily: globalSettings?.fontMeta || 'MedievalSharp',
                 }}
               >
-                {data.levelsGained} {globalSettings?.language === 'en' ? 'levels' : 'niveaux'}
+                {data.levelsGained} {labels.levels}
               </span>
             )}
             {data.type === CardType.ITEM && (
@@ -310,7 +300,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                       fontFamily: globalSettings?.fontMeta || 'MedievalSharp',
                     }}
                   >
-                    {globalSettings?.language === 'en' ? 'Big' : 'Gros'}
+                    {labels.big}
                   </span>
                 )}
                 {data.itemSlot === 'Amélioration de Monture' ? (
@@ -322,7 +312,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                         fontFamily: globalSettings?.fontMeta || 'MedievalSharp',
                       }}
                     >
-                      {globalSettings?.language === 'en' ? 'Enhancement' : 'Amélioration'}
+                      {labels.enhancement}
                     </span>
                     <span
                       className="font-bold text-[#682A22] whitespace-nowrap block"
@@ -331,7 +321,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                         fontFamily: globalSettings?.fontMeta || 'MedievalSharp',
                       }}
                     >
-                      {globalSettings?.language === 'en' ? 'for Steed' : 'de Monture'}
+                      {labels.forSteed}
                     </span>
                   </>
                 ) : data.itemSlot &&

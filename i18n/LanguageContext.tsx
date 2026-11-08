@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { fr, TranslationDictionary } from './translations/fr';
 import { en } from './translations/en';
+import { de } from './translations/de';
+import { CardLanguage } from '../types';
 
-export type Language = 'fr' | 'en';
+export type Language = CardLanguage;
 
 interface LanguageContextProps {
   language: Language;
@@ -15,14 +17,15 @@ const LanguageContext = createContext<LanguageContextProps | undefined>(undefine
 const dictionaries: Record<Language, TranslationDictionary> = {
   fr,
   en,
+  de,
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('fr');
+  const [language, setLanguageState] = useState<Language>('de');
 
   useEffect(() => {
     const savedLang = localStorage.getItem('app_language') as Language;
-    if (savedLang && (savedLang === 'fr' || savedLang === 'en')) {
+    if (savedLang && (savedLang === 'fr' || savedLang === 'en' || savedLang === 'de')) {
       setLanguageState(savedLang);
     }
   }, []);

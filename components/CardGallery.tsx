@@ -945,7 +945,7 @@ const CardGallery: React.FC<CardGalleryProps> = ({
                                       type: CardType.MONSTER,
                                       level: item.level,
                                       levelsGained: recommended.levelsGained,
-                                      gold: `${recommended.treasuresGained} Trésor${recommended.treasuresGained > 1 ? 's' : ''}`,
+                                      gold: `${recommended.treasuresGained}`,
                                       title: '', // Reset title to force user input
                                       description: '',
                                       badStuff: '',

@@ -446,6 +446,13 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
                   <span className="text-lg">🇬🇧</span>{' '}
                   <span className="font-bold">{t('globalSettings.english')}</span>
                 </button>
+                <button
+                  onClick={() => onChange({ ...settings, language: 'de' })}
+                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${settings.language === 'de' ? 'border-amber-600 bg-amber-50 text-amber-900' : 'border-stone-100 text-stone-400'}`}
+                >
+                  <span className="text-lg">🇩🇪</span>{' '}
+                  <span className="font-bold">{t('globalSettings.german')}</span>
+                </button>
               </div>
             </div>
           </section>

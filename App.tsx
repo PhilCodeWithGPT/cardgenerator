@@ -307,7 +307,7 @@ const App: React.FC = () => {
     localStorage.setItem('gemini_api_key', geminiApiKey);
     setShowSettings(false);
     loadSavedCards(scriptUrl);
-    showNotification('Paramètres enregistrés !', 'success');
+    showNotification(t('notifications.settingsSaved'), 'success');
   };
 
   const handleSaveCard = async (cardToSave?: CardData | React.SyntheticEvent | unknown) => {
@@ -401,7 +401,7 @@ const App: React.FC = () => {
 
       // Only show alert if NOT called from background removal (to avoid double alerts)
       if (!calledFromBackgroundRemoval) {
-        showNotification('Carte sauvegardée avec succès !', 'success');
+        showNotification(t('notifications.cardSaved'), 'success');
       }
 
       console.log('[SAVE] Scheduling cards list refresh in 2 seconds...');
@@ -449,7 +449,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteCard = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette carte ?')) return;
+    if (!confirm(t('notifications.confirmDelete'))) return;
 
     if (!scriptUrl) {
       // Si pas de script URL, on supprime juste de l'état local (si c'est dans la liste)
@@ -463,7 +463,7 @@ const App: React.FC = () => {
       await deleteCardFromSheet(scriptUrl, cardData.id);
       await loadSavedCards(scriptUrl);
       handleNewCard();
-      showNotification('Carte supprimée !', 'success');
+      showNotification(t('notifications.cardDeleted'), 'success');
     } catch (e: unknown) {
       showNotification(
         'Erreur lors de la suppression : ' + (e instanceof Error ? e.message : String(e)),
@@ -486,7 +486,7 @@ const App: React.FC = () => {
     setCardData(duplicatedCard);
     // On reste sur l'éditeur pour modifier la copie
     setActiveView('editor');
-    showNotification('Carte dupliquée ! Vous éditez maintenant la copie.', 'success');
+    showNotification(t('notifications.cardDuplicated'), 'success');
   };
 
   const handleNewCard = (initialData?: Partial<CardData>) => {
@@ -511,7 +511,7 @@ const App: React.FC = () => {
       if (cards.length > 0) {
         handleSelectCard(cards[0]);
         setShowImportModal(false);
-        showNotification(`${successCount} carte(s) importée(s) localement.`, 'success');
+        showNotification(t('notifications.importedLocal', { count: successCount }), 'success');
       }
       return;
     }
@@ -543,10 +543,10 @@ const App: React.FC = () => {
       setShowImportModal(false);
 
       if (successCount === cards.length) {
-        showNotification(`${successCount} carte(s) importée(s) avec succès !`, 'success');
+        showNotification(t('notifications.importedSuccess', { count: successCount }), 'success');
       } else {
         showNotification(
-          `${successCount}/${cards.length} carte(s) importée(s).`,
+          t('notifications.importedPartial', { count: successCount, total: cards.length }),
           successCount > 0 ? 'info' : 'error',
         );
       }
@@ -704,7 +704,7 @@ const App: React.FC = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    showNotification('Code copié !', 'info');
+    showNotification(t('notifications.codeCopied'), 'info');
   };
 
   return (

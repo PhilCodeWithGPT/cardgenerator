@@ -356,6 +356,7 @@ export const fr = {
     languageDesc: 'Labels automatiques (Niveaux, Trésors, etc.).',
     french: 'Français',
     english: 'English',
+    german: 'Allemand',
     defaultPrompt: 'Pré-prompt par défaut',
     defaultPromptDesc: "Instructions globales pour l'IA.",
     promptPlaceholder: "Instructions pour l'IA...",
@@ -454,6 +455,23 @@ export const fr = {
       behaviorContent:
         "En utilisant les fonctionnalités d'IA générative, vous vous engagez à ne pas générer de contenu illégal, haineux, ou violant les droits d'autrui.",
     },
+  },
+  notifications: {
+    settingsSaved: 'Paramètres enregistrés !',
+    cardSaved: 'Carte sauvegardée avec succès !',
+    confirmDelete: 'Êtes-vous sûr de vouloir supprimer cette carte ?',
+    cardDeleted: 'Carte supprimée !',
+    cardDuplicated: 'Carte dupliquée ! Vous éditez maintenant la copie.',
+    importedLocal: '{count} carte(s) importée(s) localement.',
+    importedSuccess: '{count} carte(s) importée(s) avec succès !',
+    importedPartial: '{count}/{total} carte(s) importée(s).',
+    codeCopied: 'Code copié !',
+    batchDownloaded: '📦 Lot {chunk}/{total} téléchargé !',
+    exportNoCards: "❌ Erreur : aucune carte n'a pu être capturée. Vérifiez la console.",
+    exportDone: '✅ Export terminé ! {total} fichiers ZIP.',
+    pdfGenerated: '📄 PDF généré : {fileName}',
+    resourcesError: 'Erreur de chargement des ressources',
+    removeBgError: "Erreur lors de la suppression de l'arrière-plan.",
   },
 };
 

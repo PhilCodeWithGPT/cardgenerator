@@ -5,6 +5,7 @@ import { getLayoutSource, getCardCategory } from '../utils/layoutUtils';
 import { toJpeg, getFontEmbedCSS } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { useNotification } from './NotificationContext';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface BatchPdfExportRendererProps {
   cards: CardData[];
@@ -62,8 +63,11 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
   const onCompleteRef = useRef(onComplete);
   const onProgressRef = useRef(onProgress);
   const showNotifRef = useRef(showNotification);
+  const { t } = useTranslation();
+  const tRef = useRef(t);
 
   useEffect(() => {
+    tRef.current = t;
     onCompleteRef.current = onComplete;
     onProgressRef.current = onProgress;
     showNotifRef.current = showNotification;
@@ -141,7 +145,7 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
         console.log('[PDF Export] Resources loaded');
       } catch (e) {
         console.error('[PDF Export] Failed to load resources', e);
-        showNotifRef.current('Erreur de chargement des ressources', 'error');
+        showNotifRef.current(tRef.current('notifications.resourcesError'), 'error');
       }
     };
 
@@ -337,7 +341,7 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
       totalChunks > 1 ? `munchkin_bat_partie${chunkIdx + 1}.pdf` : `munchkin_bat.pdf`;
 
     pdf.save(fileName);
-    showNotifRef.current(`📄 PDF généré : ${fileName}`, 'success');
+    showNotifRef.current(tRef.current('notifications.pdfGenerated', { fileName }), 'success');
   };
 
   const drawCutLines = (doc: jsPDF) => {

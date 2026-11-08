@@ -14,6 +14,8 @@ export enum CardType {
 
 export type CardLayout = 'standard';
 
+export type CardLanguage = 'fr' | 'en' | 'de';
+
 export interface CardData {
   id: string; // Identifiant unique pour la persistance
   title: string;
@@ -52,17 +54,18 @@ export interface PlaceholderCardData {
 
 export const INITIAL_CARD_DATA: CardData = {
   id: '', // Sera généré à l'initialisation
-  title: 'Horreur Indicible',
+  title: 'Unsägliches Grauen',
   type: CardType.MONSTER,
   layout: 'standard',
   level: 10,
   bonus: '',
-  description: 'Elle met le bazar sur le tapis.',
-  badStuff: 'Perdez votre Couvre-chef et 2 Niveaux.',
-  gold: '3 Trésors',
+  description: 'Es bringt alles auf dem Spielteppich durcheinander.',
+  badStuff: 'Verliere deine Kopfbedeckung und 2 Stufen.',
+  gold: '3',
   imagePrePrompt:
-    "Génère une illustration au format carré (1x1). Le style artistique doit imiter parfaitement celui du jeu de cartes 'Munchkin' et du dessinateur John Kovalic : un style cartoon satirique, dessiné à la main, avec des contours noirs épais et une ambiance humoristique de fantasy. L'image doit présenter un seul élément isolé, centré. Il ne doit y avoir absolument aucun texte sur l'image. Le fond doit être une couleur unie, neutre et simple, sans aucun décor ni détail. Voici l'élément à générer :",
-  imagePrompt: 'Un monstre de dessin animé drôle fait de spaghettis',
+    'Erzeuge eine quadratische Illustration (1:1). Der Zeichenstil soll den des Kartenspiels „Munchkin“ und des Zeichners John Kovalic perfekt nachahmen: satirischer, handgezeichneter Cartoon-Stil mit dicken schwarzen Konturen und humorvoller Fantasy-Stimmung. Das Bild zeigt ein einzelnes, freigestelltes, zentriertes Element. Auf dem Bild darf absolut kein Text sein. Der Hintergrund ist eine einfarbige, neutrale, schlichte Fläche ohne jede Kulisse oder Details. Das zu erzeugende Element:',
+
+  imagePrompt: 'Ein lustiges Cartoon-Monster aus Spaghetti',
   imageData: null,
   storedImageUrl: '/demo/demo_card.png',
   itemSlot: '',
@@ -95,7 +98,7 @@ export interface GlobalSettings {
   fontDescription: string;
   fontMeta: string;
   // Language for automatic labels
-  language: 'fr' | 'en';
+  language: CardLanguage;
   // Default pre-prompt for AI image generation
   defaultImagePrePrompt: string;
 }
@@ -134,6 +137,6 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   fontTitle: 'Windlass',
   fontDescription: 'Caslon Antique',
   fontMeta: 'MedievalSharp',
-  language: 'fr',
+  language: 'de',
   defaultImagePrePrompt: INITIAL_CARD_DATA.imagePrePrompt,
 };
