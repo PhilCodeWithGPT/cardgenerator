@@ -6,8 +6,40 @@ export const fr = {
     configDb: 'Configuration Base de Données',
     editor: 'Éditeur',
     gallery: 'Galerie',
+    print: 'Impression',
     list: 'Liste',
     settings: 'Paramètres',
+  },
+  print: {
+    title: 'Impression',
+    subtitle: 'Imprimer directement sur des cartes vierges collées sur une feuille A4.',
+    sizeTitle: 'Dimensions des cartes',
+    sizeDesc:
+      "Mesurez une vraie carte et saisissez ses dimensions. Valable pour la page test et l'impression.",
+    field: {
+      cardWidthMm: 'Largeur',
+      cardHeightMm: 'Hauteur',
+      gapMm: 'Espace entre les cartes',
+      cornerRadiusMm: 'Rayon des coins',
+      offsetXMm: "Décalage horizontal de l'imprimante (+ = droite)",
+      offsetYMm: "Décalage vertical de l'imprimante (+ = bas)",
+    },
+    perPage: '{count} cartes par page A4 ({cols} × {rows}).',
+    testTitle: 'Page test : cadres sans image',
+    testDesc:
+      'Cadres fins au format carte pour vérifier les dimensions et marquer où coller les cartes.',
+    testButton: 'Télécharger la page test (PDF)',
+    step1: 'Ouvrir le PDF et imprimer en « Taille réelle » / 100 % – pas « Ajuster à la page ».',
+    step2: 'Vérifier à la règle : la ligne de gauche doit mesurer 100 mm, celle du haut 50 mm.',
+    step3:
+      'Poser une vraie carte sur un cadre. Si elle ne correspond pas, corriger les dimensions et réimprimer.',
+    step4:
+      'Coller les cartes vierges dans les cadres – puis imprimer les cartes sur cette feuille.',
+    previewHint: 'Schéma de la page A4 avec les emplacements.',
+    pdfHint: 'Imprimer à 100 % / taille réelle',
+    pdfSize: 'Carte {w} × {h} mm, espace {gap} mm',
+    ruler100: '100 mm',
+    ruler50: '50 mm',
   },
   footer: {
     projectFan: 'Projet Fan Non Officiel',
@@ -357,7 +389,8 @@ export const fr = {
     cardDesign: 'Design des cartes',
     cardDesignDesc: 'Apparence de la face avant.',
     designClassic: 'Classique',
-    designClassicDesc: 'Comme les cartes imprimées : cadre brun, parchemin, « +5 Bonus » au-dessus du titre.',
+    designClassicDesc:
+      'Comme les cartes imprimées : cadre brun, parchemin, « +5 Bonus » au-dessus du titre.',
     printFrame: 'Imprimer le cadre et le parchemin',
     printFrameDesc:
       "Désactivé : l'export et le PDF ne contiennent que le texte et l'image – pour des cartes vierges où le cadre et le fond sont déjà imprimés. L'aperçu montre toujours la carte complète.",

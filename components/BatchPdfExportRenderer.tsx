@@ -6,6 +6,13 @@ import { toJpeg, getFontEmbedCSS } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { useNotification } from './NotificationContext';
 import { useTranslation } from '../i18n/LanguageContext';
+import {
+  PAGE_H,
+  PAGE_W,
+  computePrintLayout,
+  drawCornerMarks,
+  fitIntoSlot,
+} from '../utils/printLayout';
 
 interface BatchPdfExportRendererProps {
   cards: CardData[];
@@ -18,21 +25,10 @@ interface BatchPdfExportRendererProps {
   ) => void;
 }
 
-const CHUNK_SIZE = 81; // 9 cards per page * 9 pages max per PDF (~80 cards)
-const CARDS_PER_PAGE = 9;
 const GC_PAUSE_MS = 200;
-
-// Dimensions (mm)
-const PAGE_W = 210;
-const PAGE_H = 297;
-const CARD_W = 56;
-const CARD_H = 88;
-const COLS = 3;
-const ROWS = 3;
 const CUT_LINE_WIDTH = 0.1;
-
-const MARGIN_X = (PAGE_W - COLS * CARD_W) / 2;
-const MARGIN_Y = (PAGE_H - ROWS * CARD_H) / 2;
+// Seitenverhältnis der gerenderten Kartenbilder (661 × 1028 px)
+const CARD_IMG_RATIO = 661 / 1028;
 
 // Colors
 const COLOR_BG_FACE = '#0d0804';
@@ -46,6 +42,11 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
   onProgress,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Druckraster aus dem Tab "Drucken" (gleiches Raster wie die Testseite)
+  const printLayout = computePrintLayout(globalSettings?.print);
+  const CARDS_PER_PAGE = printLayout.perPage;
+  const CHUNK_SIZE = CARDS_PER_PAGE * 9; // max. 9 Seiten pro PDF
+  const { cardWidthMm: CARD_W, cardHeightMm: CARD_H } = printLayout.settings;
   // Klassisches Design ohne Rahmen/Pergament: nur Text + Bild auf weißem Papier
   const textOnlyPrint =
     (globalSettings?.cardDesign ?? 'classic') === 'classic' && !globalSettings?.printFrame;
@@ -309,11 +310,8 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
       drawCutLines(pdf);
 
       pageCards.forEach((card, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-        const x = MARGIN_X + col * CARD_W;
-        const y_pdf = MARGIN_Y + row * CARD_H;
-        pdf.addImage(card.imgData, 'JPEG', x, y_pdf, CARD_W, CARD_H);
+        const r = fitIntoSlot(printLayout.slots[i], printLayout.settings, CARD_IMG_RATIO);
+        pdf.addImage(card.imgData, 'JPEG', r.x, r.y, r.w, r.h);
       });
 
       // --- PAGE VERSO (BACKS) --- (entfällt bei Blanko-Karten: Rückseiten sind schon gedruckt)
@@ -328,17 +326,12 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
       drawCutLines(pdf);
 
       pageCards.forEach((card, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-
-        // MIRROR COLUMN for back side
-        const col_mirror = COLS - 1 - col;
-        const x = MARGIN_X + col_mirror * CARD_W;
-        const y_pdf = MARGIN_Y + row * CARD_H;
-
+        // Rückseite gespiegelt (waagerecht), damit Vorder- und Rückseite übereinander liegen
+        const slot = printLayout.slots[i];
+        const x = PAGE_W - slot.x - CARD_W;
         const backImg = getBackImageForCategory(card.category);
         if (backImg) {
-          pdf.addImage(backImg, 'PNG', x, y_pdf, CARD_W, CARD_H);
+          pdf.addImage(backImg, 'PNG', x, slot.y, CARD_W, CARD_H);
         }
       });
     }
@@ -355,18 +348,7 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
     if (textOnlyPrint) doc.setDrawColor(160, 160, 160);
     else doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(CUT_LINE_WIDTH);
-
-    for (let col = 0; col <= COLS; col++) {
-      const x = MARGIN_X + col * CARD_W;
-      doc.line(x, 0, x, MARGIN_Y);
-      doc.line(x, PAGE_H - MARGIN_Y, x, PAGE_H);
-    }
-
-    for (let row = 0; row <= ROWS; row++) {
-      const y = MARGIN_Y + row * CARD_H;
-      doc.line(0, y, MARGIN_X, y);
-      doc.line(PAGE_W - MARGIN_X, y, PAGE_W, y);
-    }
+    drawCornerMarks(doc, printLayout);
   };
 
   if (currentIndex >= cards.length) return null;

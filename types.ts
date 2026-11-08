@@ -14,6 +14,8 @@ export enum CardType {
 
 export type CardLayout = 'standard';
 
+import type { PrintSettings } from './utils/printLayout';
+
 export type CardLanguage = 'fr' | 'en' | 'de';
 
 export type CardDesign = 'classic' | 'modern';
@@ -105,6 +107,8 @@ export interface GlobalSettings {
   cardDesign?: CardDesign;
   // Classic design: also print brown frame + parchment (false = text and image only, for pre-printed blank cards)
   printFrame?: boolean;
+  // A4 print grid (card size, gap, printer offset) shared by test page and card PDF
+  print?: PrintSettings;
   // Default pre-prompt for AI image generation
   defaultImagePrePrompt: string;
 }

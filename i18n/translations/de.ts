@@ -8,8 +8,41 @@ export const de: TranslationDictionary = {
     configDb: 'Datenbank-Konfiguration',
     editor: 'Editor',
     gallery: 'Galerie',
+    print: 'Drucken',
     list: 'Liste',
     settings: 'Einstellungen',
+  },
+  print: {
+    title: 'Drucken',
+    subtitle: 'Karten direkt auf Blanko-Karten drucken, die auf ein A4-Blatt geklebt sind.',
+    sizeTitle: 'Kartenmaße',
+    sizeDesc:
+      'Miss eine echte Karte nach und trage die Maße ein. Gilt für Testseite und Kartendruck.',
+    field: {
+      cardWidthMm: 'Breite',
+      cardHeightMm: 'Höhe',
+      gapMm: 'Abstand zwischen Karten',
+      cornerRadiusMm: 'Eckenradius',
+      offsetXMm: 'Druckerversatz waagerecht (+ = rechts)',
+      offsetYMm: 'Druckerversatz senkrecht (+ = unten)',
+    },
+    perPage: '{count} Karten pro A4-Seite ({cols} × {rows}).',
+    testTitle: 'Testseite: Rahmen ohne Bild',
+    testDesc:
+      'Dünne Rahmen in Kartengröße, um die Maße zu prüfen und die Klebepositionen zu markieren.',
+    testButton: 'Testseite mit Rahmen herunterladen (PDF)',
+    step1:
+      'PDF öffnen und mit „Tatsächliche Größe“ bzw. 100 % drucken – nicht „An Seite anpassen“.',
+    step2:
+      'Mit dem Lineal prüfen: Die Messlinie links muss genau 100 mm lang sein, die oben genau 50 mm.',
+    step3:
+      'Eine echte Karte auf einen Rahmen legen. Passt sie nicht, Maße oben korrigieren und neu drucken.',
+    step4: 'Blanko-Karten in die Rahmen kleben – dieses Blatt danach mit den Karten bedrucken.',
+    previewHint: 'Skizze der A4-Seite mit den Kartenplätzen.',
+    pdfHint: 'Mit 100 % / Tatsächliche Größe drucken',
+    pdfSize: 'Karte {w} × {h} mm, Abstand {gap} mm',
+    ruler100: '100 mm',
+    ruler50: '50 mm',
   },
   footer: {
     projectFan: 'Inoffizielles Fanprojekt',
@@ -270,8 +303,7 @@ export const de: TranslationDictionary = {
     default: 'Standard',
     positionXY: 'Position (X / Y)',
     descriptionBoxSize: 'Größe des Beschreibungsfelds',
-    descriptionBoxHint:
-      'Vergrößern, wenn der Text zu klein ist. Das Feld wächst nach unten.',
+    descriptionBoxHint: 'Vergrößern, wenn der Text zu klein ist. Das Feld wächst nach unten.',
     description: 'Beschreibung',
     badStuff: 'Schlimme Dinge',
     internalComment: 'Interner Kommentar (Review)',
@@ -357,7 +389,8 @@ export const de: TranslationDictionary = {
     cardDesign: 'Kartendesign',
     cardDesignDesc: 'Aussehen der Kartenvorderseite.',
     designClassic: 'Klassisch',
-    designClassicDesc: 'Wie die gedruckten Karten: brauner Rahmen, Pergament, „+5 Bonus“ über dem Titel.',
+    designClassicDesc:
+      'Wie die gedruckten Karten: brauner Rahmen, Pergament, „+5 Bonus“ über dem Titel.',
     printFrame: 'Rahmen und Pergament mitdrucken',
     printFrameDesc:
       'Aus: Export und PDF enthalten nur Text und Bild – für Blanko-Karten, auf denen Rahmen und Hintergrund schon gedruckt sind. Die Vorschau zeigt die Karte trotzdem vollständig.',

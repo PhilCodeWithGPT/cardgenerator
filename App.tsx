@@ -13,6 +13,7 @@ import { saveCardToSheet, fetchCardsFromSheet, deleteCardFromSheet } from './ser
 import { useNotification } from './components/NotificationContext';
 import { useTranslation } from './i18n/LanguageContext';
 import { AI_ENABLED } from './utils/features';
+import PrintView from './components/PrintView';
 
 const GOOGLE_SCRIPT_TEMPLATE = `// CODE À COPIER DANS VOTRE GOOGLE APPS SCRIPT (fichier Code.gs)
 
@@ -181,9 +182,9 @@ const App: React.FC = () => {
   const [geminiApiKey, setGeminiApiKey] = useState<string>(''); // New: Gemini API key
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'config' | 'code'>('config'); // Nouvel état pour les onglets modal settings
-  const [activeView, setActiveView] = useState<'editor' | 'gallery' | 'list' | 'settings'>(
-    'editor',
-  ); // Ajout de 'settings'
+  const [activeView, setActiveView] = useState<
+    'editor' | 'gallery' | 'list' | 'print' | 'settings'
+  >('editor'); // Ajout de 'settings'
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingList, setIsLoadingList] = useState(false);
@@ -780,6 +781,17 @@ const App: React.FC = () => {
               {t('app.list')}
             </button>
             <button
+              onClick={() => setActiveView('print')}
+              className={`px-6 py-2 font-bold text-sm rounded-t-lg transition-all flex items-center gap-2 ${
+                activeView === 'print'
+                  ? 'bg-stone-100 text-amber-900 shadow-sm'
+                  : 'bg-amber-800/50 text-amber-200 hover:bg-amber-800 hover:text-white'
+              }`}
+            >
+              <span>🖨️</span>
+              {t('app.print')}
+            </button>
+            <button
               onClick={() => setActiveView('settings')}
               className={`px-6 py-2 font-bold text-sm rounded-t-lg transition-all flex items-center gap-2 ${
                 activeView === 'settings'
@@ -1063,6 +1075,8 @@ const App: React.FC = () => {
             selectedCardId={cardData.id}
             globalSettings={globalSettings}
           />
+        ) : activeView === 'print' ? (
+          <PrintView settings={globalSettings} onChange={handleGlobalSettingsChange} />
         ) : activeView === 'list' ? (
           /* List View */
           <CardList
