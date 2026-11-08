@@ -94,6 +94,13 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
     const leftFooter = isItem && data.isBig ? labels.big : levelsGained;
 
     const hasDescription = !!data.description?.trim() || !!data.restrictions?.trim();
+    // Textformat: Ausrichtung + Absatz-Einzug (Standard wie auf den gedruckten Karten: links, mit Einzug)
+    const textAlign = data.textAlign ?? 'left';
+    const indent = data.textIndent === false ? 0 : '0.6em';
+    // Leerzeilen am Anfang/Ende ignorieren, alles dazwischen bleibt wie eingegeben
+    const descriptionLines = (data.description ?? '').replace(/^\s*\n|\n\s*$/g, '').split('\n');
+    if (descriptionLines.length === 1 && descriptionLines[0].trim() === '')
+      descriptionLines.length = 0;
     const hasBadStuff = data.type === CardType.MONSTER && !!data.badStuff?.trim();
 
     // --- Text einpassen: Fließtext verkleinern, bis Bild + Text in die Karte passen ---
@@ -148,6 +155,8 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
       data.description,
       data.restrictions,
       data.badStuff,
+      data.textAlign,
+      data.textIndent,
       data.type,
       imageSrc,
       headline,
@@ -280,18 +289,32 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
                 }}
               >
                 {data.restrictions?.trim() && (
-                  <p style={{ margin: '0 0 6px', textIndent: '0.6em', fontStyle: 'italic' }}>
+                  <p
+                    style={{
+                      margin: '0 0 6px',
+                      textIndent: indent,
+                      fontStyle: 'italic',
+                      textAlign,
+                    }}
+                  >
                     {data.restrictions}
                   </p>
                 )}
-                {data.description
-                  ?.split(/\n+/)
-                  .filter((p) => p.trim())
-                  .map((p, i) => (
-                    <p key={i} style={{ margin: i ? '14px 0 0' : 0, textIndent: '0.6em' }}>
-                      {p}
-                    </p>
-                  ))}
+                {/* Jede Zeile wie eingegeben: Umbrüche, Leerzeilen und Leerzeichen bleiben erhalten,
+                    damit man den Text um ein übergelegtes Bild herum formen kann. */}
+                {descriptionLines.map((line, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      textAlign,
+                      textIndent: i === 0 || descriptionLines[i - 1].trim() === '' ? indent : 0,
+                    }}
+                  >
+                    {line === '' ? ' ' : line}
+                  </p>
+                ))}
               </div>
             )}
 
@@ -317,7 +340,7 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
                     maxHeight: '100%',
                     objectFit: 'contain',
                     mixBlendMode: 'multiply',
-                    transform: `scale(${(data.imageScale || 100) / 100}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)`,
+                    transform: `scale(${(data.imageScale || 100) / 100}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)${data.imageFlipX ? ' scaleX(-1)' : ''}`,
                   }}
                 />
               )}
@@ -333,6 +356,8 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
                   lineHeight: 1.28,
                   hyphens: 'auto',
                   paddingTop: '6px',
+                  whiteSpace: 'pre-wrap',
+                  textAlign,
                 }}
               >
                 <span style={{ fontWeight: 700 }}>{labels.badStuff}</span>

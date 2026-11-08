@@ -12,32 +12,40 @@ export const fr = {
   },
   print: {
     title: 'Impression',
-    subtitle: 'Imprimer directement sur des cartes vierges collées sur une feuille A4.',
-    sizeTitle: 'Dimensions des cartes',
+    subtitle:
+      "Imprimer une carte au centre d'une feuille A4 – exactement là où la carte vierge est collée.",
+    cardTitle: 'Imprimer la carte',
+    cardDesc: "Imprime la carte ouverte dans l'éditeur.",
+    currentCard: 'Carte actuelle :',
+    withFrame: 'Imprimer un cadre de contrôle',
+    withFrameDesc:
+      'Pour un essai sur papier normal : poser la feuille sur la page test et regarder à contre-jour.',
+    cardButton: 'Télécharger la carte en PDF',
+    cardHint:
+      "Imprimer en « Taille réelle » / 100 %. L'impression du cadre et du parchemin se règle dans Paramètres → Design des cartes.",
+    printError: "Impossible de créer le fichier d'impression.",
+    sizeTitle: 'Dimensions et position',
     sizeDesc:
-      "Mesurez une vraie carte et saisissez ses dimensions. Valable pour la page test et l'impression.",
+      "Valable pour la page test et l'impression. Le décalage déplace les deux de la même façon.",
     field: {
       cardWidthMm: 'Largeur',
       cardHeightMm: 'Hauteur',
-      gapMm: 'Espace entre les cartes',
       cornerRadiusMm: 'Rayon des coins',
       offsetXMm: "Décalage horizontal de l'imprimante (+ = droite)",
       offsetYMm: "Décalage vertical de l'imprimante (+ = bas)",
     },
-    perPage: '{count} cartes par page A4 ({cols} × {rows}).',
-    testTitle: 'Page test : cadres sans image',
+    testTitle: 'Page test : cadre sans image',
     testDesc:
-      'Cadres fins au format carte pour vérifier les dimensions et marquer où coller les cartes.',
+      'Un cadre fin au format carte au centre de la page A4 – pour mesurer et coller la carte vierge.',
     testButton: 'Télécharger la page test (PDF)',
     step1: 'Ouvrir le PDF et imprimer en « Taille réelle » / 100 % – pas « Ajuster à la page ».',
     step2: 'Vérifier à la règle : la ligne de gauche doit mesurer 100 mm, celle du haut 50 mm.',
-    step3:
-      'Poser une vraie carte sur un cadre. Si elle ne correspond pas, corriger les dimensions et réimprimer.',
-    step4:
-      'Coller les cartes vierges dans les cadres – puis imprimer les cartes sur cette feuille.',
-    previewHint: 'Schéma de la page A4 avec les emplacements.',
+    step3: 'Coller la carte vierge exactement dans le cadre.',
+    step4: 'Remettre la même feuille (même face, même sens) et imprimer la carte.',
+    previewHint: 'Position de la carte sur la page A4.',
     pdfHint: 'Imprimer à 100 % / taille réelle',
-    pdfSize: 'Carte {w} × {h} mm, espace {gap} mm',
+    pdfSize: 'Carte {w} × {h} mm',
+    glueHere: 'Coller la carte vierge ici',
     ruler100: '100 mm',
     ruler50: '50 mm',
   },
@@ -241,6 +249,13 @@ export const fr = {
     treasurePlural: '{count} trésors',
   },
   cardForm: {
+    alignLeft: 'Gauche',
+    alignJustify: 'Justifié',
+    alignCenter: 'Centré',
+    textIndent: 'Retrait de paragraphe',
+    textFormatHint:
+      "Les retours à la ligne, lignes vides et espaces sont repris tels quels – pour faire épouser au texte la forme d'une image (déplacer l'image vers le haut avec Position Y).",
+    flipImage: "Retourner l'image",
     imageSection: 'Image',
     new: 'Nouvelle',
     duplicate: 'Dupliquer',

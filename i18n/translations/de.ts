@@ -14,33 +14,42 @@ export const de: TranslationDictionary = {
   },
   print: {
     title: 'Drucken',
-    subtitle: 'Karten direkt auf Blanko-Karten drucken, die auf ein A4-Blatt geklebt sind.',
-    sizeTitle: 'Kartenmaße',
-    sizeDesc:
-      'Miss eine echte Karte nach und trage die Maße ein. Gilt für Testseite und Kartendruck.',
+    subtitle:
+      'Eine Karte mittig auf ein A4-Blatt drucken – genau dorthin, wo die Blanko-Karte aufgeklebt ist.',
+    cardTitle: 'Karte drucken',
+    cardDesc: 'Druckt die Karte, die gerade im Editor geöffnet ist.',
+    currentCard: 'Aktuelle Karte:',
+    withFrame: 'Kontrollrahmen mitdrucken',
+    withFrameDesc:
+      'Für einen Probedruck auf normalem Papier: Blatt auf die Testseite legen und gegen das Licht halten.',
+    cardButton: 'Karte als PDF herunterladen',
+    cardHint:
+      'Mit „Tatsächliche Größe“ / 100 % drucken. Ob Rahmen und Pergament mitgedruckt werden, stellst du unter Einstellungen → Kartendesign ein.',
+    printError: 'Druckdatei konnte nicht erstellt werden.',
+    sizeTitle: 'Kartenmaße und Position',
+    sizeDesc: 'Gilt für Testseite und Kartendruck. Der Druckerversatz verschiebt beides gleich.',
     field: {
       cardWidthMm: 'Breite',
       cardHeightMm: 'Höhe',
-      gapMm: 'Abstand zwischen Karten',
       cornerRadiusMm: 'Eckenradius',
       offsetXMm: 'Druckerversatz waagerecht (+ = rechts)',
       offsetYMm: 'Druckerversatz senkrecht (+ = unten)',
     },
-    perPage: '{count} Karten pro A4-Seite ({cols} × {rows}).',
     testTitle: 'Testseite: Rahmen ohne Bild',
     testDesc:
-      'Dünne Rahmen in Kartengröße, um die Maße zu prüfen und die Klebepositionen zu markieren.',
-    testButton: 'Testseite mit Rahmen herunterladen (PDF)',
+      'Ein dünner Rahmen in Kartengröße mittig auf A4 – zum Nachmessen und zum Aufkleben der Blanko-Karte.',
+    testButton: 'Testseite herunterladen (PDF)',
     step1:
       'PDF öffnen und mit „Tatsächliche Größe“ bzw. 100 % drucken – nicht „An Seite anpassen“.',
     step2:
       'Mit dem Lineal prüfen: Die Messlinie links muss genau 100 mm lang sein, die oben genau 50 mm.',
-    step3:
-      'Eine echte Karte auf einen Rahmen legen. Passt sie nicht, Maße oben korrigieren und neu drucken.',
-    step4: 'Blanko-Karten in die Rahmen kleben – dieses Blatt danach mit den Karten bedrucken.',
-    previewHint: 'Skizze der A4-Seite mit den Kartenplätzen.',
+    step3: 'Blanko-Karte genau in den Rahmen kleben.',
+    step4:
+      'Dasselbe Blatt wieder einlegen (gleiche Seite, gleiche Richtung) und die Karte drucken.',
+    previewHint: 'Position der Karte auf der A4-Seite.',
     pdfHint: 'Mit 100 % / Tatsächliche Größe drucken',
-    pdfSize: 'Karte {w} × {h} mm, Abstand {gap} mm',
+    pdfSize: 'Karte {w} × {h} mm',
+    glueHere: 'Blanko-Karte hier aufkleben',
     ruler100: '100 mm',
     ruler50: '50 mm',
   },
@@ -243,6 +252,13 @@ export const de: TranslationDictionary = {
     treasurePlural: '{count} Schätze',
   },
   cardForm: {
+    alignLeft: 'Links',
+    alignJustify: 'Blocksatz',
+    alignCenter: 'Zentriert',
+    textIndent: 'Absatz-Einzug',
+    textFormatHint:
+      'Zeilenumbrüche, Leerzeilen und Leerzeichen werden genau so übernommen – so kannst du den Text um ein Bild herum formen (Bild dann mit Position Y nach oben schieben).',
+    flipImage: 'Bild spiegeln',
     imageSection: 'Bild',
     new: 'Neu',
     duplicate: 'Duplizieren',

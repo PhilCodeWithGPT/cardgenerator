@@ -42,6 +42,9 @@ export interface CardData {
   imageScale?: number; // Pourcentage de taille de l'image (défaut 100)
   imageOffsetX?: number; // Décalage horizontal en %
   imageOffsetY?: number; // Décalage vertical en %
+  imageFlipX?: boolean; // Bild waagerecht spiegeln (Blickrichtung umdrehen)
+  textAlign?: 'left' | 'justify' | 'center'; // Ausrichtung des Kartentexts (Standard links)
+  textIndent?: boolean; // Absatz-Einzug (Standard an)
   descriptionBoxScale?: number; // Pourcentage de taille de l'encart description (défaut 100)
   isBaseCard: boolean;
   isValidated: boolean;

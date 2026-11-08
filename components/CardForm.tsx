@@ -733,29 +733,6 @@ const CardForm: React.FC<CardFormProps> = ({
           </div>
         )}
 
-        {/* Metadata */}
-        <div className="flex gap-6 p-3 bg-gray-50 rounded border border-gray-200">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!!cardData.isBaseCard}
-              onChange={(e) => handleChange('isBaseCard', e.target.checked)}
-              className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
-            />
-            <span className="text-sm font-medium text-gray-700">{t('cardForm.baseCard')}</span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!!cardData.isValidated}
-              onChange={(e) => handleChange('isValidated', e.target.checked)}
-              className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
-            />
-            <span className="text-sm font-medium text-gray-700">{t('cardForm.validatedCard')}</span>
-          </label>
-        </div>
-
         {/* Image Generation Section */}
         <div className="border-t border-b border-gray-200 py-4 my-4 bg-gray-50 -mx-6 px-6">
           <label className="block text-sm font-bold text-gray-800 mb-2">
@@ -843,6 +820,17 @@ const CardForm: React.FC<CardFormProps> = ({
           )}
         </div>
 
+        {/* Bild spiegeln */}
+        <label className="flex items-center gap-2 cursor-pointer -mt-2 mb-2">
+          <input
+            type="checkbox"
+            checked={!!cardData.imageFlipX}
+            onChange={(e) => handleChange('imageFlipX', e.target.checked)}
+            className="w-4 h-4 accent-amber-700"
+          />
+          <span className="text-sm font-medium text-gray-700">⇋ {t('cardForm.flipImage')}</span>
+        </label>
+
         {/* Image Style Options */}
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div>
@@ -923,9 +911,43 @@ const CardForm: React.FC<CardFormProps> = ({
           <textarea
             value={cardData.description || ''}
             onChange={(e) => handleChange('description', e.target.value)}
-            rows={4}
+            rows={6}
             className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
           />
+          {/* Textformat */}
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <div className="inline-flex rounded border border-gray-300 overflow-hidden text-sm">
+              {(['left', 'justify', 'center'] as const).map((align) => {
+                const active = (cardData.textAlign ?? 'left') === align;
+                return (
+                  <button
+                    key={align}
+                    type="button"
+                    onClick={() => onChange({ ...cardData, textAlign: align })}
+                    className={`px-3 py-1 ${active ? 'bg-amber-700 text-white' : 'bg-white text-gray-700 hover:bg-amber-50'}`}
+                  >
+                    {t(
+                      align === 'left'
+                        ? 'cardForm.alignLeft'
+                        : align === 'justify'
+                          ? 'cardForm.alignJustify'
+                          : 'cardForm.alignCenter',
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={cardData.textIndent !== false}
+                onChange={(e) => onChange({ ...cardData, textIndent: e.target.checked })}
+                className="w-4 h-4 accent-amber-700"
+              />
+              {t('cardForm.textIndent')}
+            </label>
+          </div>
+          <p className="text-[11px] text-gray-500 mt-1">{t('cardForm.textFormatHint')}</p>
         </div>
 
         {cardData.type === CardType.MONSTER && (

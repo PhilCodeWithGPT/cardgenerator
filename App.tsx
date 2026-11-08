@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CardForm from './components/CardForm';
 import CardPreview from './components/CardPreview';
 import CardGallery from './components/CardGallery';
-import CardList from './components/CardList';
 import GlobalSettingsComponent from './components/GlobalSettings';
 import ImportModal from './components/ImportModal';
 import LegalModal from './components/LegalModal';
@@ -182,9 +181,9 @@ const App: React.FC = () => {
   const [geminiApiKey, setGeminiApiKey] = useState<string>(''); // New: Gemini API key
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'config' | 'code'>('config'); // Nouvel état pour les onglets modal settings
-  const [activeView, setActiveView] = useState<
-    'editor' | 'gallery' | 'list' | 'print' | 'settings'
-  >('editor'); // Ajout de 'settings'
+  const [activeView, setActiveView] = useState<'editor' | 'gallery' | 'print' | 'settings'>(
+    'editor',
+  ); // Ajout de 'settings'
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_GLOBAL_SETTINGS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingList, setIsLoadingList] = useState(false);
@@ -192,9 +191,6 @@ const App: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [legalActiveTab, setLegalActiveTab] = useState<'mentions' | 'privacy' | 'cgu'>('mentions');
-  const [listSaveStatus, setListSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
-    'idle',
-  );
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false); // Track if current card has changes
   const { showNotification } = useNotification();
 
@@ -663,41 +659,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeView, savedCards, cardData, navigateToSiblingCard]); // Dependencies to keep the handler updated
 
-  // Quick update for inline editing in list view (silent save)
-  const handleQuickUpdateCard = async (updatedCard: CardData) => {
-    if (!scriptUrl) return;
-
-    setListSaveStatus('saving');
-
-    try {
-      // Update local state immediately for responsiveness
-      setSavedCards((prev) => prev.map((c) => (c.id === updatedCard.id ? updatedCard : c)));
-
-      // Also update cardData if it's the same card being edited
-      if (cardData.id === updatedCard.id) {
-        setCardData(updatedCard);
-      }
-
-      // Save to backend
-      await saveCardToSheet(scriptUrl, updatedCard);
-
-      setListSaveStatus('saved');
-
-      // Reset to idle after 2 seconds
-      setTimeout(() => {
-        setListSaveStatus('idle');
-      }, 2000);
-    } catch (e: unknown) {
-      console.error('Erreur lors de la sauvegarde rapide:', e);
-      setListSaveStatus('error');
-
-      // Reset to idle after 3 seconds
-      setTimeout(() => {
-        setListSaveStatus('idle');
-      }, 3000);
-    }
-  };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     showNotification(t('notifications.codeCopied'), 'info');
@@ -768,17 +729,6 @@ const App: React.FC = () => {
                   {savedCards.length}
                 </span>
               )}
-            </button>
-            <button
-              onClick={() => setActiveView('list')}
-              className={`px-6 py-2 font-bold text-sm rounded-t-lg transition-all flex items-center gap-2 ${
-                activeView === 'list'
-                  ? 'bg-stone-100 text-amber-900 shadow-sm'
-                  : 'bg-amber-800/50 text-amber-200 hover:bg-amber-800 hover:text-white'
-              }`}
-            >
-              <span>📋</span>
-              {t('app.list')}
             </button>
             <button
               onClick={() => setActiveView('print')}
@@ -1076,15 +1026,10 @@ const App: React.FC = () => {
             globalSettings={globalSettings}
           />
         ) : activeView === 'print' ? (
-          <PrintView settings={globalSettings} onChange={handleGlobalSettingsChange} />
-        ) : activeView === 'list' ? (
-          /* List View */
-          <CardList
-            cards={savedCards}
-            onSelectCard={handleSelectCard}
-            onUpdateCard={handleQuickUpdateCard}
-            saveStatus={listSaveStatus}
-            isLoading={isLoadingList}
+          <PrintView
+            settings={globalSettings}
+            onChange={handleGlobalSettingsChange}
+            cardData={cardData}
           />
         ) : (
           /* Settings View */

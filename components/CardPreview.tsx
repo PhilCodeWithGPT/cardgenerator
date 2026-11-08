@@ -308,7 +308,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, index, globalSettings }
             referrerPolicy="no-referrer"
             className="w-full h-full object-contain mix-blend-multiply transition-transform duration-200"
             style={{
-              transform: `scale(${((data.imageScale || 100) / 100) * 1.3}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)`,
+              transform: `scale(${((data.imageScale || 100) / 100) * 1.3}) translate(${data.imageOffsetX || 0}%, ${data.imageOffsetY || 0}%)${data.imageFlipX ? ' scaleX(-1)' : ''}`,
             }}
             onError={() => setImgError(true)}
           />
@@ -353,8 +353,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, index, globalSettings }
   };
 
   // --- HELPERS TRADUCTION ---
-  const translateItemSlot = (slot: string) =>
-    translateItemSlotFor(slot, globalSettings?.language);
+  const translateItemSlot = (slot: string) => translateItemSlotFor(slot, globalSettings?.language);
 
   // --- RENDU : TYPE 1 (NOUVEAUX LAYOUTS PNG) ---
   const renderStandardLayout = () => {

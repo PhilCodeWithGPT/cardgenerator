@@ -113,8 +113,9 @@ const CardGallery: React.FC<CardGalleryProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<Set<CardType>>(new Set());
-  const [filterBase, setFilterBase] = useState<'all' | 'oui' | 'non'>('all');
-  const [filterValidated, setFilterValidated] = useState<'all' | 'oui' | 'non'>('all');
+  // Basis-/Freigabe-Filter entfernt (Felder werden nicht mehr gepflegt)
+  const filterBase = 'all' as 'all' | 'oui' | 'non';
+  const filterValidated = 'all' as 'all' | 'oui' | 'non';
   const [filterImage, setFilterImage] = useState<'all' | 'avec' | 'sans'>('all');
   const { t } = useTranslation();
   const [isExportingSelection, setIsExportingSelection] = useState(false);
@@ -480,24 +481,6 @@ const CardGallery: React.FC<CardGalleryProps> = ({
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     <select
-                      value={filterBase}
-                      onChange={(e) => setFilterBase(e.target.value as 'all' | 'oui' | 'non')}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500 bg-white"
-                    >
-                      <option value="all">{t('cardGallery.baseAll')}</option>
-                      <option value="oui">{t('cardGallery.baseOnly')}</option>
-                      <option value="non">{t('cardGallery.customOnly')}</option>
-                    </select>
-                    <select
-                      value={filterValidated}
-                      onChange={(e) => setFilterValidated(e.target.value as 'all' | 'oui' | 'non')}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500 bg-white"
-                    >
-                      <option value="all">{t('cardGallery.validationAll')}</option>
-                      <option value="oui">{t('cardGallery.validated')}</option>
-                      <option value="non">{t('cardGallery.unvalidated')}</option>
-                    </select>
-                    <select
                       value={filterImage}
                       onChange={(e) => setFilterImage(e.target.value as 'all' | 'avec' | 'sans')}
                       className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500 bg-white"
@@ -651,13 +634,6 @@ const CardGallery: React.FC<CardGalleryProps> = ({
                     {t('cardGallery.cardsTotal')}
                   </span>
                 )}
-                <span className="text-gray-300">•</span>
-                <span className="text-emerald-600 font-medium">
-                  ✓ {cards.filter((c) => c.isValidated).length}{' '}
-                  {cards.filter((c) => c.isValidated).length !== 1
-                    ? t('cardGallery.validatedWordPlural')
-                    : t('cardGallery.validatedWord')}
-                </span>
               </div>
             </div>
           )}
