@@ -1,0 +1,36 @@
+# Mattis Munchkin Editor auf dem VPS (~/munchkin). src/ = git archive des Branches.
+services:
+  munchkin:
+    build: .
+    image: munchkin-de:local
+    container_name: munchkin
+    restart: unless-stopped
+    depends_on:
+      - munchkin-api
+    networks:
+      - proxy
+      - intern
+
+  munchkin-api:
+    image: node:20-alpine
+    container_name: munchkin-api
+    restart: unless-stopped
+    user: '1000:1001'
+    working_dir: /app
+    command: ['node', 'server.js']
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - ./src/server:/app:ro
+      - ./data:/data
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    networks:
+      - intern
+
+networks:
+  proxy:
+    external: true
+  intern: {}

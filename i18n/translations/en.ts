@@ -510,6 +510,7 @@ export const en: TranslationDictionary = {
     },
   },
   notifications: {
+    loadError: 'Could not load cards: {message}',
     settingsSaved: 'Settings saved!',
     cardSaved: 'Card saved successfully!',
     confirmDelete: 'Are you sure you want to delete this card?',

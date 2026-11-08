@@ -517,6 +517,7 @@ export const de: TranslationDictionary = {
     },
   },
   notifications: {
+    loadError: 'Karten konnten nicht geladen werden: {message}',
     settingsSaved: 'Einstellungen gespeichert!',
     cardSaved: 'Karte erfolgreich gespeichert!',
     confirmDelete: 'Möchtest du diese Karte wirklich löschen?',

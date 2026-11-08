@@ -8,7 +8,12 @@ import LegalModal from './components/LegalModal';
 import Footer from './components/Footer';
 import CardNavigation from './components/CardNavigation';
 import { CardData, INITIAL_CARD_DATA, GlobalSettings, DEFAULT_GLOBAL_SETTINGS } from './types';
-import { saveCardToSheet, fetchCardsFromSheet, deleteCardFromSheet } from './services/sheetService';
+import {
+  CARD_STORE_URL,
+  saveCardToServer,
+  fetchCardsFromServer,
+  deleteCardFromServer,
+} from './services/cardStore';
 import { useNotification } from './components/NotificationContext';
 import { useTranslation } from './i18n/LanguageContext';
 import { AI_ENABLED } from './utils/features';
@@ -164,6 +169,14 @@ function responseJSON(data) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
+/** Kartendaten vergleichbar machen: ohne Base64-Bild und ohne Server-Metadaten, Schlüssel sortiert. */
+const comparableCard = (card: CardData): string => {
+  const keys = Object.keys(card)
+    .filter((k) => k !== 'imageData' && !k.startsWith('_'))
+    .sort();
+  return JSON.stringify(card, keys);
+};
+
 const App: React.FC = () => {
   const { t } = useTranslation();
 
@@ -175,7 +188,8 @@ const App: React.FC = () => {
 
   const [cardData, setCardData] = useState<CardData>(initCard);
   const [savedCards, setSavedCards] = useState<CardData[]>([]);
-  const [scriptUrl, setScriptUrl] = useState<string>('');
+  // Speicher: eigener Server (/api). scriptUrl bleibt als "verbunden"-Kennzeichen erhalten.
+  const [scriptUrl, setScriptUrl] = useState<string>(CARD_STORE_URL);
 
   const [removeBgApiKey, setRemoveBgApiKey] = useState<string>(''); // remove.bg API key
   const [geminiApiKey, setGeminiApiKey] = useState<string>(''); // New: Gemini API key
@@ -199,11 +213,7 @@ const App: React.FC = () => {
 
   // Charger les préférences depuis localStorage
   useEffect(() => {
-    const savedUrl = localStorage.getItem('google_script_url');
-    if (savedUrl) {
-      setScriptUrl(savedUrl);
-      loadSavedCards(savedUrl);
-    }
+    loadSavedCards(CARD_STORE_URL);
 
     const savedApiKey = localStorage.getItem('removebg_api_key');
     if (savedApiKey) {
@@ -231,6 +241,7 @@ const App: React.FC = () => {
         console.error('Erreur chargement global settings', e);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nur einmal beim Start laden
   }, []);
 
   const handleGlobalSettingsChange = (newSettings: GlobalSettings) => {
@@ -278,15 +289,13 @@ const App: React.FC = () => {
     setIsLoadingList(true);
     setConfigError(null);
     try {
-      const cards = await fetchCardsFromSheet(url);
+      const cards = await fetchCardsFromServer(url);
       setSavedCards(cards.reverse()); // Les plus récents en premier
     } catch (e: unknown) {
       console.error('Erreur chargement cartes', e);
       // Détection sommaire des erreurs de configuration/CORS
       const errMsg = e instanceof Error ? e.message : String(e);
-      if (errMsg.includes('Failed to fetch') || errMsg.includes('Erreur HTTP')) {
-        setConfigError('Impossible de communiquer avec Google Script.');
-      }
+      showNotification(t('notifications.loadError', { message: errMsg }), 'error');
     } finally {
       setIsLoadingList(false);
     }
@@ -331,29 +340,32 @@ const App: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const result = await saveCardToSheet(scriptUrl, dataToSave);
+      const result = await saveCardToServer(scriptUrl, dataToSave);
       console.log('[SAVE] Save result:', result);
 
       // Si le serveur a renvoyé une URL d'image valide (qui ressemble à une URL)
       // On met à jour l'état local pour utiliser l'URL stockée
       if (
         result.imageUrl &&
-        (result.imageUrl.startsWith('http') || result.imageUrl.startsWith('data:'))
+        (result.imageUrl.startsWith('http') ||
+          result.imageUrl.startsWith('data:') ||
+          result.imageUrl.startsWith('/'))
       ) {
         console.log('[SAVE] Valid image URL received:', result.imageUrl.substring(0, 100) + '...');
 
         // Keep imageData if it exists (important for freshly modified images)
         // Only clear it if we're confident the URL points to the correct image
-        if (dataToSave.imageData) {
-          console.log('[SAVE] Keeping imageData, setting storedImageUrl');
-          // For freshly generated/modified images, keep imageData and set storedImageUrl
-          // The image will display from imageData until the user reloads the card
-          setCardData((prev) => ({ ...prev, ...dataToSave, storedImageUrl: result.imageUrl }));
-        } else {
-          console.log('[SAVE] No imageData, using storedImageUrl only');
-          // For cards without local imageData, use the stored URL
-          setCardData((prev) => ({ ...prev, storedImageUrl: result.imageUrl, imageData: null }));
-        }
+        // Nur Bild-URL übernehmen; imageData nur leeren, wenn seitdem kein neues Bild gewählt wurde.
+        // Alle übrigen Felder bleiben wie gerade im Editor (Autosave darf nichts zurücksetzen).
+        setCardData((prev) =>
+          prev.id === dataToSave.id
+            ? {
+                ...prev,
+                storedImageUrl: result.imageUrl,
+                imageData: prev.imageData === dataToSave.imageData ? null : prev.imageData,
+              }
+            : prev,
+        );
       } else {
         // Si l'URL renvoyée est vide ou invalide (ex: juste un nom de fichier),
         // on GARDE l'image locale (imageData) pour ne pas casser l'affichage.
@@ -373,7 +385,9 @@ const App: React.FC = () => {
       const updatedDataToSave = {
         ...dataToSave,
         ...(result.imageUrl &&
-        (result.imageUrl.startsWith('http') || result.imageUrl.startsWith('data:'))
+        (result.imageUrl.startsWith('http') ||
+          result.imageUrl.startsWith('data:') ||
+          result.imageUrl.startsWith('/'))
           ? { storedImageUrl: result.imageUrl }
           : {}),
         imageData: null, // savedCards should not hold base64 image data
@@ -395,39 +409,6 @@ const App: React.FC = () => {
       if (!calledFromBackgroundRemoval) {
         showNotification(t('notifications.cardSaved'), 'success');
       }
-
-      console.log('[SAVE] Scheduling cards list refresh in 2 seconds...');
-      // Delay the list refresh by 2 seconds to give Google Sheets time to fully update
-      // Store the current card ID to check later if we should update cardData
-      const savedCardId = dataToSave.id;
-
-      setTimeout(async () => {
-        console.log('[SAVE] Refreshing cards list...');
-        await loadSavedCards(scriptUrl);
-
-        // After reloading, update cardData only if the user is still editing the same card
-        // This prevents unwanted navigation when user has moved to a different card/view
-        console.log(
-          '[SAVE] Checking if we should sync card data. Current card ID:',
-          cardData.id,
-          'Saved card ID:',
-          savedCardId,
-        );
-
-        // Use a callback to access the most recent cardData value
-        setCardData((currentCardData) => {
-          if (currentCardData.id === savedCardId) {
-            console.log('[SAVE] User still on same card, updating silently from savedCards');
-            // Find the updated card in savedCards using a ref callback won't work here
-            // We need to use setSavedCards callback or find another way
-            // For now, we don't update cardData here - it was already updated above after save
-            console.log('[SAVE] Card data already up-to-date from save response');
-          } else {
-            console.log('[SAVE] User has navigated away, not updating cardData');
-          }
-          return currentCardData; // No change needed, already updated above
-        });
-      }, 2000);
     } catch (e: unknown) {
       console.error('[SAVE] Save error:', e);
       showNotification(
@@ -452,7 +433,7 @@ const App: React.FC = () => {
 
     setIsSaving(true);
     try {
-      await deleteCardFromSheet(scriptUrl, cardData.id);
+      await deleteCardFromServer(scriptUrl, cardData.id);
       await loadSavedCards(scriptUrl);
       handleNewCard();
       showNotification(t('notifications.cardDeleted'), 'success');
@@ -511,11 +492,13 @@ const App: React.FC = () => {
     // Save each card to the sheet
     for (const card of cards) {
       try {
-        const result = await saveCardToSheet(scriptUrl, card);
+        const result = await saveCardToServer(scriptUrl, card);
         // Update the card with the image URL if returned
         if (
           result.imageUrl &&
-          (result.imageUrl.startsWith('http') || result.imageUrl.startsWith('data:'))
+          (result.imageUrl.startsWith('http') ||
+            result.imageUrl.startsWith('data:') ||
+            result.imageUrl.startsWith('/'))
         ) {
           card.storedImageUrl = result.imageUrl;
         }
@@ -606,33 +589,35 @@ const App: React.FC = () => {
       return;
     }
 
-    // Compare the current card with the saved version
-    // We need to compare all important fields
+    // Alle Felder vergleichen (ohne imageData und Server-Felder mit "_"); ein neu gewähltes Bild
+    // (imageData gesetzt) gilt immer als ungespeichert, weil es nach dem Speichern geleert wird.
     const hasChanges =
-      savedVersion.title !== cardData.title ||
-      savedVersion.type !== cardData.type ||
-      savedVersion.level !== cardData.level ||
-      savedVersion.bonus !== cardData.bonus ||
-      savedVersion.gold !== cardData.gold ||
-      savedVersion.description !== cardData.description ||
-      savedVersion.badStuff !== cardData.badStuff ||
-      savedVersion.restrictions !== cardData.restrictions ||
-      savedVersion.itemSlot !== cardData.itemSlot ||
-      savedVersion.isBig !== cardData.isBig ||
-      savedVersion.levelsGained !== cardData.levelsGained ||
-      savedVersion.isBaseCard !== cardData.isBaseCard ||
-      savedVersion.isValidated !== cardData.isValidated ||
-      savedVersion.imagePrompt !== cardData.imagePrompt ||
-      savedVersion.imageScale !== cardData.imageScale ||
-      savedVersion.imageOffsetX !== cardData.imageOffsetX ||
-      savedVersion.imageOffsetY !== cardData.imageOffsetY ||
-      savedVersion.descriptionBoxScale !== cardData.descriptionBoxScale ||
-      savedVersion.internalComment !== cardData.internalComment ||
-      // Check if image has changed (new imageData without matching storedImageUrl)
-      (cardData.imageData && !cardData.storedImageUrl);
+      comparableCard(savedVersion) !== comparableCard(cardData) || !!cardData.imageData;
 
     setHasUnsavedChanges(hasChanges);
   }, [cardData, savedCards]);
+
+  // Autosave: 1,5 s nach der letzten Änderung still auf dem Server speichern
+  useEffect(() => {
+    if (!hasUnsavedChanges || isSaving) return;
+    const snapshot = cardData;
+    const timer = setTimeout(() => {
+      handleSaveCard(snapshot);
+    }, 1500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardData, hasUnsavedChanges, isSaving]);
+
+  // Warnung, falls die Seite mit ungespeicherten Änderungen geschlossen wird
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
 
   // Keyboard navigation support (arrow keys)
   useEffect(() => {
@@ -678,13 +663,6 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`transition-colors ${configError ? 'text-red-400 animate-pulse' : 'text-amber-200 hover:text-white'}`}
-                title={t('app.configDb')}
-              >
-                ⚙️
-              </button>
               <a
                 href="https://github.com/chichekebbab/cardgenerator"
                 target="_blank"

@@ -516,6 +516,7 @@ export const fr = {
     },
   },
   notifications: {
+    loadError: 'Impossible de charger les cartes : {message}',
     settingsSaved: 'Paramètres enregistrés !',
     cardSaved: 'Carte sauvegardée avec succès !',
     confirmDelete: 'Êtes-vous sûr de vouloir supprimer cette carte ?',
