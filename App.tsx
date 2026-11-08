@@ -247,7 +247,13 @@ const App: React.FC = () => {
     const savedGlobalSettings = localStorage.getItem('global_settings');
     if (savedGlobalSettings) {
       try {
-        setGlobalSettings({ ...DEFAULT_GLOBAL_SETTINGS, ...JSON.parse(savedGlobalSettings) });
+        // Nur noch klassisches Design und deutsche Karten
+        setGlobalSettings({
+          ...DEFAULT_GLOBAL_SETTINGS,
+          ...JSON.parse(savedGlobalSettings),
+          cardDesign: 'classic',
+          language: 'de',
+        });
       } catch (e) {
         console.error('Erreur chargement global settings', e);
       }
@@ -259,36 +265,6 @@ const App: React.FC = () => {
     setGlobalSettings(newSettings);
     localStorage.setItem('global_settings', JSON.stringify(newSettings));
   };
-
-  // Inject Google Fonts whenever font settings change
-  useEffect(() => {
-    const fonts = [
-      globalSettings.fontTitle,
-      globalSettings.fontDescription,
-      globalSettings.fontMeta,
-    ];
-    // Deduplicate
-    const uniqueFonts = [...new Set(fonts)];
-    const families = uniqueFonts
-      .filter((f) => !['Windlass', 'Caslon Antique'].includes(f))
-      .map((f) => `family=${encodeURIComponent(f)}:wght@400;700`)
-      .join('&');
-    const href = families ? `https://fonts.googleapis.com/css2?${families}&display=swap` : '';
-
-    // Replace or create the link tag
-    let link = document.getElementById('dynamic-google-fonts') as HTMLLinkElement | null;
-    if (!link) {
-      link = document.createElement('link');
-      link.id = 'dynamic-google-fonts';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    if (href) {
-      link.href = href;
-    } else {
-      link.href = '';
-    }
-  }, [globalSettings.fontTitle, globalSettings.fontDescription, globalSettings.fontMeta]);
 
   const handleResetGlobalSettings = () => {
     setGlobalSettings(DEFAULT_GLOBAL_SETTINGS);

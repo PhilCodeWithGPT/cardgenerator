@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { fr, TranslationDictionary } from './translations/fr';
 import { en } from './translations/en';
 import { de } from './translations/de';
@@ -23,13 +23,7 @@ const dictionaries: Record<Language, TranslationDictionary> = {
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('de');
 
-  useEffect(() => {
-    const savedLang = localStorage.getItem('app_language') as Language;
-    if (savedLang && (savedLang === 'fr' || savedLang === 'en' || savedLang === 'de')) {
-      setLanguageState(savedLang);
-    }
-  }, []);
-
+  // Oberfläche immer Deutsch (früher gespeicherte Sprachwahl wird ignoriert)
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('app_language', lang);

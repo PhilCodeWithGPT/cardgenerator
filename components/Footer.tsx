@@ -6,7 +6,7 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
-  const { t, language, setLanguage } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <footer className="bg-stone-200 text-stone-600 text-xs py-4 text-center border-t border-stone-300 mt-auto">
@@ -35,28 +35,6 @@ const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
           >
             {t('footer.cgu')}
           </button>
-          <div className="flex items-center gap-2 ml-4 border-l border-stone-400 pl-4">
-            <button
-              onClick={() => setLanguage('fr')}
-              className={`transition-colors font-bold ${language === 'fr' ? 'text-amber-800' : 'text-stone-400 hover:text-stone-600'}`}
-            >
-              FR
-            </button>
-            <span>|</span>
-            <button
-              onClick={() => setLanguage('en')}
-              className={`transition-colors font-bold ${language === 'en' ? 'text-amber-800' : 'text-stone-400 hover:text-stone-600'}`}
-            >
-              EN
-            </button>
-            <span>|</span>
-            <button
-              onClick={() => setLanguage('de')}
-              className={`transition-colors font-bold ${language === 'de' ? 'text-amber-800' : 'text-stone-400 hover:text-stone-600'}`}
-            >
-              DE
-            </button>
-          </div>
         </div>
       </div>
     </footer>
