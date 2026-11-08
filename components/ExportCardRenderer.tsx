@@ -3,6 +3,7 @@ import { CardData, CardType, GlobalSettings } from '../types';
 import { formatBonus } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
 import { CARD_LABELS, translateItemSlotFor } from '../utils/cardLabels';
+import ClassicCardFace from './ClassicCardFace';
 
 interface ExportCardRendererProps {
   data: CardData;
@@ -59,6 +60,10 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
     ]);
 
     const descriptionFontSize = hasExternalFontSize ? externalFontSize : internalFontSize;
+
+    if ((globalSettings?.cardDesign ?? 'classic') === 'classic') {
+      return <ClassicCardFace ref={ref} data={data} globalSettings={globalSettings} />;
+    }
 
     // --- HELPERS ---
     const getDiamondInfo = () => {

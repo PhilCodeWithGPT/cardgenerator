@@ -11,7 +11,9 @@ export function extractGoldValue(goldString: string | undefined): number | null 
     }
 
     // Extract all numbers from the string
-    const matches = goldString.match(/\d+/);
+    // Tausendertrenner zwischen Ziffern entfernen ("1.000", "1 000", "1'000")
+    const normalized = goldString.replace(/(\d)[.\s'](?=\d{3}(?!\d))/g, '$1');
+    const matches = normalized.match(/\d+/);
     if (!matches) {
         return null;
     }
@@ -68,7 +70,7 @@ export function formatGoldDisplay(
             return `${numericValue} gold piece${numericValue > 1 ? 's' : ''}`;
         }
         if (language === 'de') {
-            return `${numericValue} Goldstück${numericValue > 1 ? 'e' : ''}`;
+            return `${numericValue.toLocaleString('de-DE')} Goldstück${numericValue > 1 ? 'e' : ''}`;
         }
         return `${numericValue} pièce${numericValue > 1 ? 's' : ''} d'or`;
     }

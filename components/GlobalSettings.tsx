@@ -421,6 +421,42 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
             </div>
           </section>
 
+          {/* Card design */}
+          <section className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            <div className="bg-stone-50 px-6 py-4 border-b border-stone-200 flex items-center gap-3">
+              <span className="text-2xl">🃏</span>
+              <div>
+                <h3 className="font-bold text-stone-800">{t('globalSettings.cardDesign')}</h3>
+                <p className="text-xs text-stone-500">{t('globalSettings.cardDesignDesc')}</p>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {(['classic', 'modern'] as const).map((design) => {
+                  const active = (settings.cardDesign ?? 'classic') === design;
+                  return (
+                    <button
+                      key={design}
+                      onClick={() => onChange({ ...settings, cardDesign: design })}
+                      className={`flex-1 text-left p-3 rounded-lg border-2 transition-all ${active ? 'border-amber-600 bg-amber-50 text-amber-900' : 'border-stone-100 text-stone-500'}`}
+                    >
+                      <span className="font-bold block">
+                        {t(design === 'classic' ? 'globalSettings.designClassic' : 'globalSettings.designModern')}
+                      </span>
+                      <span className="text-xs">
+                        {t(
+                          design === 'classic'
+                            ? 'globalSettings.designClassicDesc'
+                            : 'globalSettings.designModernDesc',
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
           {/* 3. Language */}
           <section className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
             <div className="bg-stone-50 px-6 py-4 border-b border-stone-200 flex items-center gap-3">

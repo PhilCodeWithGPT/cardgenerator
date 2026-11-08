@@ -16,6 +16,8 @@ export type CardLayout = 'standard';
 
 export type CardLanguage = 'fr' | 'en' | 'de';
 
+export type CardDesign = 'classic' | 'modern';
+
 export interface CardData {
   id: string; // Identifiant unique pour la persistance
   title: string;
@@ -99,6 +101,8 @@ export interface GlobalSettings {
   fontMeta: string;
   // Language for automatic labels
   language: CardLanguage;
+  // Card front design ('classic' = printed-card look, 'modern' = original PNG layouts)
+  cardDesign?: CardDesign;
   // Default pre-prompt for AI image generation
   defaultImagePrePrompt: string;
 }
@@ -138,5 +142,6 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   fontDescription: 'Caslon Antique',
   fontMeta: 'MedievalSharp',
   language: 'de',
+  cardDesign: 'classic',
   defaultImagePrePrompt: INITIAL_CARD_DATA.imagePrePrompt,
 };

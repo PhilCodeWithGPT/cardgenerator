@@ -12,6 +12,9 @@ export const CARD_LABELS: Record<
     big: string;
     enhancement: string;
     forSteed: string;
+    level: string;
+    bonus: string;
+    curse: string;
   }
 > = {
   fr: {
@@ -20,6 +23,9 @@ export const CARD_LABELS: Record<
     big: 'Gros',
     enhancement: 'Amélioration',
     forSteed: 'de Monture',
+    level: 'Niveau',
+    bonus: 'Bonus',
+    curse: 'Malédiction !',
   },
   en: {
     badStuff: 'Bad Stuff: ',
@@ -27,13 +33,19 @@ export const CARD_LABELS: Record<
     big: 'Big',
     enhancement: 'Enhancement',
     forSteed: 'for Steed',
+    level: 'Level',
+    bonus: 'Bonus',
+    curse: 'Curse!',
   },
   de: {
     badStuff: 'Schlimme Dinge: ',
     levels: 'Stufen',
     big: 'Groß',
-    enhancement: 'Verbesserung',
-    forSteed: 'für Reittier',
+    enhancement: 'Verstärker',
+    forSteed: 'für Ross',
+    level: 'Stufe',
+    bonus: 'Bonus',
+    curse: 'Fluch!',
   },
 };
 
@@ -56,9 +68,9 @@ const ITEM_SLOT_LABELS: Record<Exclude<CardLanguage, 'fr'>, Record<string, strin
     'Couvre-chef': 'Kopfbedeckung',
     Chaussures: 'Schuhwerk',
     Armure: 'Rüstung',
-    Monture: 'Reittier',
-    Amélioration: 'Verbesserung',
-    'Amélioration de Monture': 'Reittier-Verbesserung',
+    Monture: 'Ross',
+    Amélioration: 'Verstärker',
+    'Amélioration de Monture': 'Ross-Verstärker',
   },
 };
 

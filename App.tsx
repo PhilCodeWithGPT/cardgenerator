@@ -229,7 +229,7 @@ const App: React.FC = () => {
     const savedGlobalSettings = localStorage.getItem('global_settings');
     if (savedGlobalSettings) {
       try {
-        setGlobalSettings(JSON.parse(savedGlobalSettings));
+        setGlobalSettings({ ...DEFAULT_GLOBAL_SETTINGS, ...JSON.parse(savedGlobalSettings) });
       } catch (e) {
         console.error('Erreur chargement global settings', e);
       }

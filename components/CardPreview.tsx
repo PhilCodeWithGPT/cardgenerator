@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { CardData, CardType, GlobalSettings } from '../types';
 import { toPng, getFontEmbedCSS } from 'html-to-image';
 import ExportCardRenderer from './ExportCardRenderer';
+import ClassicCardFace, { CLASSIC_WIDTH } from './ClassicCardFace';
 import { useNotification } from './NotificationContext';
 import { getExportFilename, formatBonus, getLayoutSource } from '../utils/layoutUtils';
 import { formatGoldDisplay } from '../utils/goldFormatter';
@@ -660,7 +661,24 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, index, globalSettings }
 
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-wood-pattern min-h-[600px] gap-8">
-      {renderStandardLayout()}
+      {(globalSettings?.cardDesign ?? 'classic') === 'classic' ? (
+        <div
+          ref={cardRef}
+          className="relative w-[330px] h-[514px] overflow-hidden shadow-card"
+          style={{ borderRadius: '19px' }}
+        >
+          <div
+            style={{
+              transform: `scale(${330 / CLASSIC_WIDTH})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            <ClassicCardFace data={data} globalSettings={globalSettings} />
+          </div>
+        </div>
+      ) : (
+        renderStandardLayout()
+      )}
 
       <button
         onClick={handleDownload}
