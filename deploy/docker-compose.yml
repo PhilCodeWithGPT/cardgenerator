@@ -20,6 +20,10 @@ services:
     command: ['node', 'server.js']
     environment:
       DATA_DIR: /data
+    # OPENAI_API_KEY für die Rechtschreibprüfung (Datei ~/munchkin/.env, nicht im Repo)
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./src/server:/app:ro
       - ./data:/data

@@ -13,6 +13,7 @@
  *   PUT    /api/cards/:id          → Karte speichern; imageData wird als Datei abgelegt
  *   DELETE /api/cards/:id          → Karte in den Papierkorb
  *   GET    /api/images/:file       → Bild
+ *   POST   /api/spellcheck         → Rechtschreibprüfung der Kartentexte (OpenAI, Modell Luna)
  */
 const http = require('http');
 const fs = require('fs');
@@ -27,6 +28,15 @@ const TRASH = path.join(DATA_DIR, 'trash');
 const MAX_BODY = 25 * 1024 * 1024; // Bild als Base64 + Karte
 const MAX_IMAGE = 15 * 1024 * 1024;
 const MAX_CARDS = 3000;
+
+// KI-Rechtschreibprüfung (Schlüssel nur aus der Umgebung, nie im Frontend)
+const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-6-luna';
+const OPENAI_REASONING = process.env.OPENAI_REASONING || 'low';
+const SPELL_MAX_PER_DAY = parseInt(process.env.SPELL_MAX_PER_DAY || '200', 10);
+const SPELL_MAX_FIELD = 3000;
+const SPELL_FIELDS = ['title', 'restrictions', 'description', 'badStuff'];
+const USAGE_FILE = path.join(DATA_DIR, 'ai-usage.json');
 
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const IMAGE_FILE_RE = /^[A-Za-z0-9_-]{1,64}-\d{10,16}\.(png|jpg|webp|gif)$/;
@@ -145,6 +155,140 @@ async function saveCard(id, raw) {
   return { status: 'success', imageUrl: card.storedImageUrl || undefined };
 }
 
+const SPELL_PROMPT = `Du bist Lektor für selbst gestaltete deutsche Munchkin-Karten (das humorvolle Fantasy-Kartenspiel).
+Die Texte hat ein Kind mit Lese-Rechtschreib-Schwäche geschrieben. Korrigiere Rechtschreibung, Groß- und Kleinschreibung,
+Zeichensetzung und eindeutige Grammatikfehler in allen Feldern.
+
+Regeln:
+- Inhalt, Witz, Wortwahl und Satzbau des Kindes beibehalten. Nicht umformulieren, nichts ergänzen, nichts kürzen.
+  Nur wenn ein Satz sonst unverständlich bleibt, minimal glätten.
+- Zeilenumbrüche, Leerzeilen und Leerzeichen am Zeilenanfang EXAKT beibehalten (damit wird der Text um ein Bild geformt).
+- Munchkin-Begriffe wie auf den deutschen Karten: Stufe/Stufen, Schatz/Schätze, Goldstücke, Schlimme Dinge, Ross, Mietling,
+  Kopfbedeckung, Rüstung, Schuhwerk, 1 Hand, 2 Hände, Verstärker, Fluch, Monster, Klasse, Rasse, Groß, Bonus, Einmalig,
+  Tür, Schatz, Davonlaufen, Kampf, Spieler.
+- Zahlen und Boni als Ziffern lassen (+3, 2 Stufen, 1.000 Goldstücke).
+- Anführungszeichen immer als Guillemets wie auf deutschen Karten: »Text« (Spitzen zeigen nach innen), innen ›Text‹.
+  Auch "Text", „Text“ und >>Text<< so umwandeln.
+- Gedankenstrich als – mit Leerzeichen davor und danach.
+- Erfundene Namen und absichtliche Wortspiele nicht „verbessern“, nur offensichtliche Tippfehler darin.
+- Ist ein Feld leer, bleibt es leer.
+- Für jede Änderung eine Erklärung in einfacher, freundlicher Sprache für ein Kind (höchstens 12 Wörter),
+  z. B. "Nomen schreibt man groß." oder "Nach »dass« kommt ein Komma davor."`;
+
+const SPELL_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: [...SPELL_FIELDS, 'changes'],
+  properties: {
+    title: { type: 'string' },
+    restrictions: { type: 'string' },
+    description: { type: 'string' },
+    badStuff: { type: 'string' },
+    changes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['field', 'before', 'after', 'why'],
+        properties: {
+          field: { type: 'string', enum: SPELL_FIELDS },
+          before: { type: 'string' },
+          after: { type: 'string' },
+          why: { type: 'string' },
+        },
+      },
+    },
+  },
+};
+
+/** Tageszähler gegen versehentliche Dauerschleifen / Kosten (Datei unter DATA_DIR). */
+async function countSpellRequest() {
+  const today = new Date().toISOString().slice(0, 10);
+  let usage = { date: today, count: 0 };
+  try {
+    const u = JSON.parse(await fsp.readFile(USAGE_FILE, 'utf8'));
+    if (u && u.date === today) usage = u;
+  } catch {
+    /* neu */
+  }
+  if (usage.count >= SPELL_MAX_PER_DAY) {
+    throw Object.assign(new Error('Tageslimit der Rechtschreibprüfung erreicht'), { status: 429 });
+  }
+  usage.count += 1;
+  await writeAtomic(USAGE_FILE, JSON.stringify(usage));
+}
+
+async function spellcheck(raw) {
+  if (!OPENAI_API_KEY) {
+    throw Object.assign(new Error('Rechtschreibprüfung ist nicht eingerichtet'), { status: 503 });
+  }
+  let input;
+  try {
+    input = JSON.parse(raw);
+  } catch {
+    throw Object.assign(new Error('Ungültiges JSON'), { status: 400 });
+  }
+  const fields = {};
+  for (const f of SPELL_FIELDS) {
+    const v = input && typeof input[f] === 'string' ? input[f] : '';
+    if (v.length > SPELL_MAX_FIELD) throw Object.assign(new Error('Text zu lang'), { status: 413 });
+    fields[f] = v;
+  }
+  if (SPELL_FIELDS.every((f) => !fields[f].trim())) {
+    return { ...fields, changes: [] };
+  }
+  await countSpellRequest();
+
+  const body = {
+    model: OPENAI_MODEL,
+    messages: [
+      { role: 'system', content: SPELL_PROMPT },
+      {
+        role: 'user',
+        content:
+          'Kartentyp: ' +
+          (typeof input.type === 'string' ? input.type.slice(0, 40) : 'unbekannt') +
+          '\nFelder (JSON):\n' +
+          JSON.stringify(fields),
+      },
+    ],
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'korrektur', strict: true, schema: SPELL_SCHEMA },
+    },
+    max_completion_tokens: 4000,
+  };
+  if (OPENAI_REASONING && /^(gpt-5|gpt-6|o)/.test(OPENAI_MODEL)) {
+    body.reasoning_effort = OPENAI_REASONING;
+  }
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(90000),
+  });
+  if (!r.ok) {
+    console.error('[spellcheck] OpenAI', r.status, (await r.text()).slice(0, 300));
+    throw Object.assign(new Error(`KI-Dienst antwortet nicht (HTTP ${r.status})`), {
+      status: 502,
+    });
+  }
+  const data = await r.json();
+  const content = data?.choices?.[0]?.message?.content;
+  let result;
+  try {
+    result = JSON.parse(content);
+  } catch {
+    throw Object.assign(new Error('KI-Antwort unlesbar'), { status: 502 });
+  }
+  // Nur bekannte Felder zurückgeben; leere Eingabefelder bleiben leer
+  const out = { changes: Array.isArray(result.changes) ? result.changes.slice(0, 60) : [] };
+  for (const f of SPELL_FIELDS) {
+    out[f] = fields[f].trim() && typeof result[f] === 'string' ? result[f] : fields[f];
+  }
+  return out;
+}
+
 async function deleteCard(id) {
   const file = path.join(CARDS, `${id}.json`);
   const stamp = Date.now();
@@ -163,7 +307,12 @@ const server = http.createServer(async (req, res) => {
   try {
     if (parts[0] !== 'api') return send(res, 404, { status: 'error', message: 'Not found' });
 
-    if (parts[1] === 'health' && req.method === 'GET') return send(res, 200, { status: 'ok' });
+    if (parts[1] === 'health' && req.method === 'GET')
+      return send(res, 200, { status: 'ok', spellcheck: !!OPENAI_API_KEY });
+
+    if (parts[1] === 'spellcheck' && parts.length === 2 && req.method === 'POST') {
+      return send(res, 200, await spellcheck(await readBody(req)));
+    }
 
     if (parts[1] === 'cards' && parts.length === 2 && req.method === 'GET') {
       return send(res, 200, await listCards());

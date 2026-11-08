@@ -15,6 +15,8 @@ import {
 import { useTranslation } from '../i18n/LanguageContext';
 import { translateItemSlotFor } from '../utils/cardLabels';
 import { AI_ENABLED } from '../utils/features';
+import SpellcheckPanel from './SpellcheckPanel';
+import { SpellResult, checkSpelling } from '../services/spellcheck';
 import {
   DEFAULT_FONT_SIZE,
   MIN_FONT_SIZE,
@@ -68,6 +70,8 @@ const CardForm: React.FC<CardFormProps> = ({
   const [suggestionInput, setSuggestionInput] = useState(''); // New: suggestion input
   const [isRemovingBg, setIsRemovingBg] = useState(false); // New: background removal state
   const [error, setError] = useState<string | null>(null);
+  const [isSpellchecking, setIsSpellchecking] = useState(false);
+  const [spellResult, setSpellResult] = useState<SpellResult | null>(null);
   const { showNotification } = useNotification();
   const { t, language } = useTranslation();
 
@@ -310,6 +314,20 @@ const CardForm: React.FC<CardFormProps> = ({
     }
   };
 
+  const handleSpellcheck = async () => {
+    setIsSpellchecking(true);
+    try {
+      setSpellResult(await checkSpelling(cardData));
+    } catch (e) {
+      showNotification(
+        `${t('spellcheck.error')} ${e instanceof Error ? e.message : String(e)}`,
+        'error',
+      );
+    } finally {
+      setIsSpellchecking(false);
+    }
+  };
+
   // Auto-fill monster balancing fields when level changes
   useEffect(() => {
     if (
@@ -343,6 +361,18 @@ const CardForm: React.FC<CardFormProps> = ({
 
   return (
     <div className="bg-white p-6 pt-0 rounded-lg shadow-md border border-gray-200 h-full overflow-y-auto">
+      {spellResult && (
+        <SpellcheckPanel
+          card={cardData}
+          result={spellResult}
+          onApply={(updates) => {
+            onChange({ ...cardData, ...updates });
+            setSpellResult(null);
+            showNotification(t('spellcheck.applied'), 'success');
+          }}
+          onClose={() => setSpellResult(null)}
+        />
+      )}
       <div className="sticky top-0 z-10 bg-white flex items-center justify-between gap-2 mb-4 py-3 border-b border-gray-200 overflow-x-auto">
         <div className="flex items-center gap-2 shrink-0">
           <button
@@ -365,6 +395,15 @@ const CardForm: React.FC<CardFormProps> = ({
             title={t('cardForm.btnImportTitle')}
           >
             <span>📥</span> {t('cardForm.import')}
+          </button>
+          <button
+            onClick={handleSpellcheck}
+            disabled={isSpellchecking}
+            className="h-[38px] px-3 text-sm font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 rounded border border-violet-300 transition-colors flex items-center gap-1.5 whitespace-nowrap disabled:opacity-60"
+            title={t('spellcheck.buttonTitle')}
+          >
+            <span>{isSpellchecking ? '⏳' : '✨'}</span>{' '}
+            {isSpellchecking ? t('spellcheck.checking') : t('spellcheck.button')}
           </button>
         </div>
 
