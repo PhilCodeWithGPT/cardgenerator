@@ -356,6 +356,9 @@ export const de: TranslationDictionary = {
     cardDesignDesc: 'Aussehen der Kartenvorderseite.',
     designClassic: 'Klassisch',
     designClassicDesc: 'Wie die gedruckten Karten: brauner Rahmen, Pergament, „+5 Bonus“ über dem Titel.',
+    printFrame: 'Rahmen und Pergament mitdrucken',
+    printFrameDesc:
+      'Aus: Export und PDF enthalten nur Text und Bild – für Blanko-Karten, auf denen Rahmen und Hintergrund schon gedruckt sind. Die Vorschau zeigt die Karte trotzdem vollständig.',
     designModern: 'Modern',
     designModernDesc: 'Original-Layout dieses Programms mit Rauten und eigenen Vorlagen.',
     language: 'Spielsprache',

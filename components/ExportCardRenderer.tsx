@@ -62,7 +62,14 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
     const descriptionFontSize = hasExternalFontSize ? externalFontSize : internalFontSize;
 
     if ((globalSettings?.cardDesign ?? 'classic') === 'classic') {
-      return <ClassicCardFace ref={ref} data={data} globalSettings={globalSettings} />;
+      return (
+        <ClassicCardFace
+          ref={ref}
+          data={data}
+          globalSettings={globalSettings}
+          textOnly={!globalSettings?.printFrame}
+        />
+      );
     }
 
     // --- HELPERS ---
@@ -245,9 +252,7 @@ const ExportCardRenderer = forwardRef<HTMLDivElement, ExportCardRendererProps>(
                     className="mt-3 text-left border-t-2 border-black/20 pt-2"
                     style={{ width: '100%' }}
                   >
-                    <span className="font-bold">
-                      {labels.badStuff}
-                    </span>
+                    <span className="font-bold">{labels.badStuff}</span>
                     <span className="italic">{data.badStuff}</span>
                   </div>
                 )}

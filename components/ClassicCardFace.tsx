@@ -24,6 +24,8 @@ const FONT_BODY = '"Libre Caslon Text", "Caslon Antique", "IM Fell DW Pica", ser
 interface ClassicCardFaceProps {
   data: CardData;
   globalSettings?: GlobalSettings;
+  /** Nur Text und Bild (für Blanko-Karten, auf denen Rahmen und Pergament schon gedruckt sind). */
+  textOnly?: boolean;
 }
 
 const resolveImageSrc = (data: CardData): string | undefined => {
@@ -49,7 +51,7 @@ const withLiningDigits = (text: string): React.ReactNode[] =>
   );
 
 const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
-  ({ data, globalSettings }, ref) => {
+  ({ data, globalSettings, textOnly = false }, ref) => {
     const language = globalSettings?.language || 'de';
     const labels = CARD_LABELS[language];
     const imageSrc = resolveImageSrc(data);
@@ -108,12 +110,14 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           // 1. Versuch: eine Zeile, notfalls bis 46 px verkleinern (wie auf den gedruckten Karten)
           let ts = 66;
           setSize(ts);
-          while (ts > 46 && (lines(ts) > 1 || title.scrollWidth > title.clientWidth)) setSize((ts -= 2));
+          while (ts > 46 && (lines(ts) > 1 || title.scrollWidth > title.clientWidth))
+            setSize((ts -= 2));
           // 2. Sonst: max. 2 Zeilen, keine Überbreite
           if (lines(ts) > 1 || title.scrollWidth > title.clientWidth) {
             ts = 62;
             setSize(ts);
-            while (ts > 34 && (lines(ts) > 2 || title.scrollWidth > title.clientWidth)) setSize((ts -= 2));
+            while (ts > 34 && (lines(ts) > 2 || title.scrollWidth > title.clientWidth))
+              setSize((ts -= 2));
           }
         }
         if (body) {
@@ -165,7 +169,9 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
           width: `${CLASSIC_WIDTH}px`,
           height: `${CLASSIC_HEIGHT}px`,
           borderRadius: '38px',
-          background: 'linear-gradient(160deg, #5a3626 0%, #4a2a1d 45%, #3a2016 100%)',
+          background: textOnly
+            ? 'transparent'
+            : 'linear-gradient(160deg, #5a3626 0%, #4a2a1d 45%, #3a2016 100%)',
           padding: `${FRAME}px`,
           boxSizing: 'border-box',
           position: 'relative',
@@ -173,28 +179,32 @@ const ClassicCardFace = forwardRef<HTMLDivElement, ClassicCardFaceProps>(
         }}
       >
         {/* Pergament */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: `${FRAME}px`,
-            borderRadius: '26px',
-            background:
-              'radial-gradient(ellipse 90% 75% at 50% 42%, #fbebd2 0%, #f6dcb8 55%, #ecc799 85%, #e2b585 100%)',
-            boxShadow: 'inset 0 0 18px rgba(120, 70, 30, 0.35)',
-          }}
-        />
+        {!textOnly && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: `${FRAME}px`,
+              borderRadius: '26px',
+              background:
+                'radial-gradient(ellipse 90% 75% at 50% 42%, #fbebd2 0%, #f6dcb8 55%, #ecc799 85%, #e2b585 100%)',
+              boxShadow: 'inset 0 0 18px rgba(120, 70, 30, 0.35)',
+            }}
+          />
+        )}
         {/* leichte Papierstruktur */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: `${FRAME}px`,
-            borderRadius: '26px',
-            opacity: 0.18,
-            mixBlendMode: 'multiply',
-            background:
-              'repeating-radial-gradient(circle at 30% 20%, rgba(150,100,50,0.25) 0 2px, transparent 2px 9px), repeating-radial-gradient(circle at 75% 70%, rgba(150,100,50,0.2) 0 1px, transparent 1px 7px)',
-          }}
-        />
+        {!textOnly && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: `${FRAME}px`,
+              borderRadius: '26px',
+              opacity: 0.18,
+              mixBlendMode: 'multiply',
+              background:
+                'repeating-radial-gradient(circle at 30% 20%, rgba(150,100,50,0.25) 0 2px, transparent 2px 9px), repeating-radial-gradient(circle at 75% 70%, rgba(150,100,50,0.2) 0 1px, transparent 1px 7px)',
+            }}
+          />
+        )}
 
         {/* Inhalt */}
         <div

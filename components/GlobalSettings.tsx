@@ -441,7 +441,11 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
                       className={`flex-1 text-left p-3 rounded-lg border-2 transition-all ${active ? 'border-amber-600 bg-amber-50 text-amber-900' : 'border-stone-100 text-stone-500'}`}
                     >
                       <span className="font-bold block">
-                        {t(design === 'classic' ? 'globalSettings.designClassic' : 'globalSettings.designModern')}
+                        {t(
+                          design === 'classic'
+                            ? 'globalSettings.designClassic'
+                            : 'globalSettings.designModern',
+                        )}
                       </span>
                       <span className="text-xs">
                         {t(
@@ -454,6 +458,24 @@ const GlobalSettingsComponent: React.FC<GlobalSettingsProps> = ({
                   );
                 })}
               </div>
+              {(settings.cardDesign ?? 'classic') === 'classic' && (
+                <label className="mt-4 flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 accent-amber-700"
+                    checked={!!settings.printFrame}
+                    onChange={(e) => onChange({ ...settings, printFrame: e.target.checked })}
+                  />
+                  <span>
+                    <span className="font-bold text-stone-800 block text-sm">
+                      {t('globalSettings.printFrame')}
+                    </span>
+                    <span className="text-xs text-stone-500">
+                      {t('globalSettings.printFrameDesc')}
+                    </span>
+                  </span>
+                </label>
+              )}
             </div>
           </section>
 

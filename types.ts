@@ -103,6 +103,8 @@ export interface GlobalSettings {
   language: CardLanguage;
   // Card front design ('classic' = printed-card look, 'modern' = original PNG layouts)
   cardDesign?: CardDesign;
+  // Classic design: also print brown frame + parchment (false = text and image only, for pre-printed blank cards)
+  printFrame?: boolean;
   // Default pre-prompt for AI image generation
   defaultImagePrePrompt: string;
 }
@@ -143,5 +145,6 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   fontMeta: 'MedievalSharp',
   language: 'de',
   cardDesign: 'classic',
+  printFrame: false,
   defaultImagePrePrompt: INITIAL_CARD_DATA.imagePrePrompt,
 };

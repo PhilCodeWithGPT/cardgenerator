@@ -356,6 +356,9 @@ export const fr = {
     cardDesignDesc: 'Apparence de la face avant.',
     designClassic: 'Classique',
     designClassicDesc: 'Comme les cartes imprimées : cadre brun, parchemin, « +5 Bonus » au-dessus du titre.',
+    printFrame: 'Imprimer le cadre et le parchemin',
+    printFrameDesc:
+      "Désactivé : l'export et le PDF ne contiennent que le texte et l'image – pour des cartes vierges où le cadre et le fond sont déjà imprimés. L'aperçu montre toujours la carte complète.",
     designModern: 'Moderne',
     designModernDesc: "Mise en page d'origine avec losanges et layouts personnalisés.",
     language: 'Langue du jeu',

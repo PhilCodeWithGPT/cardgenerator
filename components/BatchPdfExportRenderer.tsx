@@ -46,6 +46,9 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
   onProgress,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Klassisches Design ohne Rahmen/Pergament: nur Text + Bild auf weißem Papier
+  const textOnlyPrint =
+    (globalSettings?.cardDesign ?? 'classic') === 'classic' && !globalSettings?.printFrame;
   const exportRef = useRef<HTMLDivElement>(null);
   const pdfRef = useRef<jsPDF | null>(null);
   const capturedCardsRef = useRef<{ imgData: string; category: string }[]>([]);
@@ -238,6 +241,7 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
         await waitForImages(exportRef.current);
 
         const options = {
+          backgroundColor: textOnlyPrint ? '#ffffff' : undefined,
           quality: 0.85,
           pixelRatio: 1,
           cacheBust: false,
@@ -298,8 +302,10 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
       // --- PAGE RECTO (FACES) ---
       if (p > 0 || pdf.internal.getNumberOfPages() > 1) pdf.addPage();
 
-      pdf.setFillColor(COLOR_BG_FACE);
-      pdf.rect(0, 0, PAGE_W, PAGE_H, 'F');
+      if (!textOnlyPrint) {
+        pdf.setFillColor(COLOR_BG_FACE);
+        pdf.rect(0, 0, PAGE_W, PAGE_H, 'F');
+      }
       drawCutLines(pdf);
 
       pageCards.forEach((card, i) => {
@@ -310,7 +316,8 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
         pdf.addImage(card.imgData, 'JPEG', x, y_pdf, CARD_W, CARD_H);
       });
 
-      // --- PAGE VERSO (BACKS) ---
+      // --- PAGE VERSO (BACKS) --- (entfällt bei Blanko-Karten: Rückseiten sind schon gedruckt)
+      if (textOnlyPrint) continue;
       pdf.addPage();
 
       const firstCardCat = pageCards[0].category;
@@ -345,7 +352,8 @@ const BatchPdfExportRenderer: React.FC<BatchPdfExportRendererProps> = ({
   };
 
   const drawCutLines = (doc: jsPDF) => {
-    doc.setDrawColor(255, 255, 255);
+    if (textOnlyPrint) doc.setDrawColor(160, 160, 160);
+    else doc.setDrawColor(255, 255, 255);
     doc.setLineWidth(CUT_LINE_WIDTH);
 
     for (let col = 0; col <= COLS; col++) {

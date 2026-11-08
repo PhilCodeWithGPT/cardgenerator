@@ -351,6 +351,9 @@ export const en: TranslationDictionary = {
     cardDesignDesc: 'Look of the card front.',
     designClassic: 'Classic',
     designClassicDesc: 'Like the printed cards: brown frame, parchment, "+5 Bonus" above the title.',
+    printFrame: 'Print frame and parchment',
+    printFrameDesc:
+      'Off: export and PDF contain only text and image – for blank cards that already have the frame and background printed. The preview still shows the full card.',
     designModern: 'Modern',
     designModernDesc: 'Original layout of this app with diamonds and custom layouts.',
     language: 'Game Language',
